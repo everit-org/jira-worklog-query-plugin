@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2013, Everit Kft.
+
+    All rights reserved.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 3 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+    MA 02110-1301  USA
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.everit</groupId>
+		<artifactId>oss</artifactId>
+		<version>3</version>
+	</parent>
+
+	<groupId>org.everit.jira.worklog.query.plugin</groupId>
+	<artifactId>main</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+
+	<inceptionYear>2013</inceptionYear>
+
+	<properties>
+		<jira.version>4.4</jira.version>
+	</properties>
+
+	<modules>
+		<module>core</module>
+		<module>itest</module>
+	</modules>
+
+	<repositories>
+		<repository>
+			<id>everit.groups.public</id>
+			<name>Everit Public Repository Group</name>
+			<url>https://repository.everit.biz/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>everit.groups.proxy</id>
+			<name>Everit Proxy Repository Group</name>
+			<url>https://repository.everit.biz/nexus/content/groups/proxy</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>atlassian</id>
+			<url>http://repository.atlassian.com/maven2/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>3dparty</id>
+			<url>https://maven.atlassian.com/3rdparty</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>atlassianinside</id>
+			<url>https://repository.atlassian.com/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>everit.groups.public</id>
+			<name>Everit Public Repository Group</name>
+			<url>https://repository.everit.biz/nexus/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>everit.groups.proxy</id>
+			<name>Everit Proxy Repository Group</name>
+			<url>https://repository.everit.biz/nexus/content/groups/proxy</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<distributionManagement>
+		<repository>
+			<id>everit.releases</id>
+			<name>Everit Public Repository</name>
+			<url>https://repository.everit.biz/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>everit.snapshots</id>
+			<name>Everit Public Snapshot Repository</name>
+			<url>https://repository.everit.biz/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>
