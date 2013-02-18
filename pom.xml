@@ -129,17 +129,4 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<distributionManagement>
-		<repository>
-			<id>everit.releases</id>
-			<name>Everit Public Repository</name>
-			<url>https://repository.everit.biz/nexus/content/repositories/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>everit.snapshots</id>
-			<name>Everit Public Snapshot Repository</name>
-			<url>https://repository.everit.biz/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 </project>
