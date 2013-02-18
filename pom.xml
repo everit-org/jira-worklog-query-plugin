@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>org.everit</groupId>
 		<artifactId>oss</artifactId>
-		<version>3</version>
+		<version>4-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.everit.jira.worklog.query.plugin</groupId>
