@@ -1,0 +1,5 @@
+# Eclipse and Maven Files #
+.settings
+.project
+.checkstyle
+target
