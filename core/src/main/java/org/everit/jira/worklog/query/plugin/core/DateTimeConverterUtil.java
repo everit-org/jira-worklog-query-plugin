@@ -102,6 +102,15 @@ public final class DateTimeConverterUtil {
         return calendar;
     }
 
+    /**
+     * Format a String date to valid ISO-8601 format String date.
+     * 
+     * @param dateString
+     *            The date.
+     * @return The formated String date.
+     * @throws ParseException
+     *             If cannot parse the String to Date.
+     */
     public static String stringDateToISO8601FormateString(final String dateString) throws ParseException {
         DateFormat dateFormat = new SimpleDateFormat(JIRA_OUTPUT_DATE_TIME_FORMAT);
         Date date = dateFormat.parse(dateString);
