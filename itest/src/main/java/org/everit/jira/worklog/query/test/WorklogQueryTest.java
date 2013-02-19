@@ -21,37 +21,76 @@ package org.everit.jira.worklog.query.test;
  * MA 02110-1301  USA
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.Base64;
 
-public class WorklogQueryTest {
+/**
+ * The WorklogQueryTest class help test the plugin authorization and the plugin query.
+ */
+public final class WorklogQueryTest {
+    /**
+     * The logger used to log.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryTest.class);
 
+    /**
+     * The status code of the unsuccessful authorization.
+     */
+    public static final int INVALID_AUTHOR_STATUS = 401;
+
+    /**
+     * The WorklogQueryTest class main method.
+     * 
+     * @param args
+     *            The main args.
+     */
     public static void main(final String[] args) {
         try {
             WorklogQueryTest.simpleClientTest();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Fail to test jira-worklog-query", e);
         }
     }
 
+    /**
+     * The jira-worklog-query HTTP BASIC AUTHORIZATION test.
+     * 
+     * @throws Exception
+     *             If any Exception happen.
+     */
     public static void simpleClientTest() throws Exception {
         String username = "admin";
         String password = "admin";
-        String url = "http://127.0.0.1:8080/rest/jira-worklog-query/1.0.0-SNAPSHOT/findWorklogs?startDate=2012-12-12&user=admin&project=TESTTWO";
-        System.out.println("Start the simple test");
-        final String auth = new String(Base64.encode(username + ":" + password));
-        final Client client = Client.create();
-        final WebResource webResource = client.resource(url);
-        final ClientResponse response = webResource.header("Authorization", "Basic " + auth).type("application/json")
+        String url =
+                "http://127.0.0.1:8080/"
+                        + "rest/jira-worklog-query/1.0.0-SNAPSHOT/"
+                        + "findWorklogs?startDate=2012-12-12&user=admin&project=TESTTWO";
+        LOGGER.info("Start the simple test");
+        byte[] authByteArray = Base64.encode(username + ":" + password);
+        String auth = new String(authByteArray, "UTF8");
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+        ClientResponse response = webResource.header("Authorization", "Basic " + auth).type("application/json")
                 .accept("application/json").get(ClientResponse.class);
-        final int statusCode = response.getStatus();
-        if (statusCode == 401) {
+        int statusCode = response.getStatus();
+
+        if (statusCode == INVALID_AUTHOR_STATUS) {
             throw new Exception("Invalid Username or Password");
         }
         final String stringResponse = response.getEntity(String.class);
-        System.out.println("sr: " + stringResponse);
+        LOGGER.info("sr: " + stringResponse);
+
+    }
+
+    /**
+     * Simple private constructor.
+     */
+    private WorklogQueryTest() {
 
     }
 
