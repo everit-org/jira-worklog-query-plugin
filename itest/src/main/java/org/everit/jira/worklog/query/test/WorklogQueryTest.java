@@ -32,7 +32,7 @@ import com.sun.jersey.core.util.Base64;
 /**
  * The WorklogQueryTest class help test the plugin authorization and the plugin query.
  */
-final class WorklogQueryTest {
+public final class WorklogQueryTest {
     /**
      * The logger used to log.
      */
