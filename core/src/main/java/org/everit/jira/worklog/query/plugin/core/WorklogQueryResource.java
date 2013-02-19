@@ -56,6 +56,9 @@ import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 
+/**
+ * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the JIRA worklog query.
+ */
 @Path("/findWorklogs")
 public class WorklogQueryResource {
 
@@ -83,6 +86,34 @@ public class WorklogQueryResource {
      * The ComponentManager Instance.
      */
     private ComponentManager componentManagerInstance;
+
+    /**
+     * Check the required (or optional) parameters. If any parameter missing or conflict return whit the right Response
+     * what describe the problem. If everything right the return whit null.
+     * 
+     * @param startDate
+     *            The findWorklogs startDate parameter.
+     * @param user
+     *            The findWorklogs user parameter.
+     * @param group
+     *            The findWorklogs group parameter.
+     * @return If find bad parameter then return whit Response else null.
+     */
+    private Response checkRequiredFindWorklogsParameter(final String startDate, final String user, final String group) {
+        if (isStringEmpty(startDate)) {
+            return Response.status(Response.Status.BAD_REQUEST).
+                    entity("The 'startDate' parameter is missing!").build();
+        }
+        if ((isStringEmpty(user)) && (isStringEmpty(group))) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("The 'user' or the 'group' parameter is missing!").build();
+        }
+        if ((!isStringEmpty(user)) && (!isStringEmpty(group))) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("The 'user' and the 'group' parameters cannot be present at the same time.").build();
+        }
+        return null;
+    }
 
     /**
      * Convert the endDate String to Calendar.
@@ -244,17 +275,9 @@ public class WorklogQueryResource {
             @QueryParam("group") final String group,
             @QueryParam("project") final String project) {
 
-        if ((startDate == null) || (startDate.length() == 0)) {
-            return Response.status(Response.Status.BAD_REQUEST).
-                    entity("The 'startDate' parameter is missing!").build();
-        }
-        if (((user == null) || (user.length() == 0)) && ((group == null) || (group.length() == 0))) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("The 'user' or the 'group' parameter is missing!").build();
-        }
-        if (((user != null) && (user.length() > 0)) && ((group != null) && (group.length() > 0))) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("The 'user' and the 'group' parameters cannot be present at the same time.").build();
+        Response checkRequiredFindWorklogsParamResponse = checkRequiredFindWorklogsParameter(startDate, user, group);
+        if (checkRequiredFindWorklogsParamResponse != null) {
+            return checkRequiredFindWorklogsParamResponse;
         }
         Calendar startDateCalendar;
         try {
@@ -279,6 +302,20 @@ public class WorklogQueryResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(e.getMessage()).build();
         }
+    }
+
+    /**
+     * Check the given String is empty.
+     * 
+     * @param theString
+     *            The String variable.
+     * @return If the String is null or the String length equals whit 0 then true, else false.
+     */
+    private boolean isStringEmpty(final String theString) {
+        if ((theString == null) || (theString.length() == 0)) {
+            return true;
+        }
+        return false;
     }
 
     /**
