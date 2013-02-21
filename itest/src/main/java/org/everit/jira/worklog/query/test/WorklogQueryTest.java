@@ -68,7 +68,7 @@ public final class WorklogQueryTest {
         String password = "admin";
         String url =
                 "http://127.0.0.1:8080/"
-                        + "rest/jira-worklog-query/1.0.0-SNAPSHOT/"
+                        + "rest/jira-worklog-query/1.0.0/"
                         + "findWorklogs?startDate=2012-12-12&user=admin&project=TESTTWO";
         LOGGER.info("Start the simple test");
         byte[] authByteArray = Base64.encode(username + ":" + password);
