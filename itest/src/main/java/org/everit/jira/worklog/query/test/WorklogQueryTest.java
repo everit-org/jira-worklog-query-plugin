@@ -42,6 +42,14 @@ public final class WorklogQueryTest {
      * The status code of the unsuccessful authorization.
      */
     public static final int INVALID_AUTHOR_STATUS = 401;
+    /**
+     * The user name for authentication.
+     */
+    public static final String USERNAME = "admin";
+    /**
+     * The password for authentication.
+     */
+    public static final String PASSWORD = "admin";
 
     /**
      * The WorklogQueryTest class main method.
@@ -52,6 +60,7 @@ public final class WorklogQueryTest {
     public static void main(final String[] args) {
         try {
             WorklogQueryTest.simpleClientTest();
+            WorklogQueryTest.simpleClientUpdateTest();
         } catch (Exception e) {
             LOGGER.error("Fail to test jira-worklog-query", e);
         }
@@ -64,14 +73,42 @@ public final class WorklogQueryTest {
      *             If any Exception happen.
      */
     public static void simpleClientTest() throws Exception {
-        String username = "admin";
-        String password = "admin";
         String url =
-                "http://127.0.0.1:8080/"
-                        + "rest/jira-worklog-query/1.0.0/"
-                        + "findWorklogs?startDate=2012-12-12&user=admin&project=TESTTWO";
+                "http://localhost:8080/"
+                        + "rest/jira-worklog-query/1.1.0/"
+                        + "find/"
+                        + "worklogs?startDate=2012-12-12&user=admin";
         LOGGER.info("Start the simple test");
-        byte[] authByteArray = Base64.encode(username + ":" + password);
+        byte[] authByteArray = Base64.encode(USERNAME + ":" + PASSWORD);
+        String auth = new String(authByteArray, "UTF8");
+        Client client = Client.create();
+        WebResource webResource = client.resource(url);
+        ClientResponse response = webResource.header("Authorization", "Basic " + auth).type("application/json")
+                .accept("application/json").get(ClientResponse.class);
+        int statusCode = response.getStatus();
+
+        if (statusCode == INVALID_AUTHOR_STATUS) {
+            throw new Exception("Invalid Username or Password");
+        }
+        final String stringResponse = response.getEntity(String.class);
+        LOGGER.info("sr: " + stringResponse);
+
+    }
+
+    /**
+     * The jira-worklog-query HTTP BASIC AUTHORIZATION test.
+     * 
+     * @throws Exception
+     *             If any Exception happen.
+     */
+    public static void simpleClientUpdateTest() throws Exception {
+        String url =
+                "http://localhost:8080/"
+                        + "rest/jira-worklog-query/1.1.0/"
+                        + "find/"
+                        + "updatedWorklogs?startDate=2013-04-15&user=admin";
+        LOGGER.info("Start the simple test");
+        byte[] authByteArray = Base64.encode(USERNAME + ":" + PASSWORD);
         String auth = new String(authByteArray, "UTF8");
         Client client = Client.create();
         WebResource webResource = client.resource(url);
