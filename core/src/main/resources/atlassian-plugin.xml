@@ -30,7 +30,7 @@
 		<vendor name="EverIT Kft." url="https://www.everit.biz" />
 	</plugin-info>
 
-	<rest key="JWQP" path="/jira-worklog-query" version="1.0.0">
+	<rest key="JWQP" path="/jira-worklog-query" version="1.1.0">
 		<description>Provides the REST resource for the Worklog Query plugin.</description>
 	</rest>
 
