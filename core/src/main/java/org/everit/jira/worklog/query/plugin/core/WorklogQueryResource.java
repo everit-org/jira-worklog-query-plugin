@@ -59,7 +59,7 @@ import com.atlassian.jira.util.json.JSONObject;
 /**
  * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the JIRA worklog query.
  */
-@Path("/findWorklogs")
+@Path("/find")
 public class WorklogQueryResource {
 
     /**
@@ -250,7 +250,7 @@ public class WorklogQueryResource {
     }
 
     /**
-     * The findWorklogs restful api method.
+     * The updatedWorklogs restful api method.
      * 
      * @param startDate
      *            The query startDate parameter.
@@ -268,6 +268,63 @@ public class WorklogQueryResource {
      */
     @GET
     @Produces("*/*")
+    @Path("/updatedWorklogs")
+    public Response findUpdatedWorklogs(
+            @QueryParam("startDate") final String startDate,
+            @QueryParam("endDate") final String endDate,
+            @QueryParam("user") final String user,
+            @QueryParam("group") final String group,
+            @QueryParam("project") final String project) {
+
+        Response checkRequiredFindWorklogsParamResponse = checkRequiredFindWorklogsParameter(startDate, user, group);
+        if (checkRequiredFindWorklogsParamResponse != null) {
+            return checkRequiredFindWorklogsParamResponse;
+        }
+        Calendar startDateCalendar;
+        try {
+            startDateCalendar = convertStartDate(startDate);
+        } catch (ParseException e) {
+            LOGGER.debug("Failed to convert start date", e);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Cannot parse the 'startDate' parameter: " + startDate).build();
+        }
+        Calendar endDateCalendar;
+        try {
+            endDateCalendar = convertEndDate(endDate);
+        } catch (ParseException e) {
+            LOGGER.debug("Failed to convert end date", e);
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Cannot parse the 'endDate' parameter: " + endDate).build();
+        }
+        try {
+            return Response.ok(worklogQuery(startDateCalendar, endDateCalendar, user, group, project, true)).build();
+        } catch (Exception e) {
+            LOGGER.error("Failed to query the worklogs", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage()).build();
+        }
+    }
+
+    /**
+     * The worklogs restful api method.
+     * 
+     * @param startDate
+     *            The query startDate parameter.
+     * @param endDate
+     *            The query endDate parameter, optional. Default value is the current time.
+     * @param user
+     *            The query user parameter, optional. This or the group parameter is required.
+     * @param group
+     *            The query group parameter, optional. This or the user parameter is required.
+     * @param project
+     *            The query project parameter, optional. Default is all project.
+     * @return {@link Response} what contains the result of the query. If the method parameters was wrong then a message
+     *         what contains the description of the bad request. In case of any exception return {@link Response} with
+     *         INTERNAL_SERVER_ERROR status what contains the original exception message.
+     */
+    @GET
+    @Produces("*/*")
+    @Path("/worklogs")
     public Response findWorklogs(
             @QueryParam("startDate") final String startDate,
             @QueryParam("endDate") final String endDate,
@@ -296,7 +353,7 @@ public class WorklogQueryResource {
                     .entity("Cannot parse the 'endDate' parameter: " + endDate).build();
         }
         try {
-            return Response.ok(worklogQuery(startDateCalendar, endDateCalendar, user, group, project)).build();
+            return Response.ok(worklogQuery(startDateCalendar, endDateCalendar, user, group, project, false)).build();
         } catch (Exception e) {
             LOGGER.error("Failed to query the worklogs", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -331,6 +388,9 @@ public class WorklogQueryResource {
      *            The group String parameter.
      * @param projectString
      *            The project String parameter.
+     * @param updated
+     *            True if the method give back the worklogs which were created or updated in the given period, else
+     *            false. The false give back the worklogs of the period.
      * @return JSONString what contains a list of queried worklogs.
      * @throws ParseException
      *             If can't parse the dates.
@@ -340,7 +400,7 @@ public class WorklogQueryResource {
      *             If the createWorklogJSONObject method throw a JSONException.
      */
     private String worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
-            final String groupString, final String projectString)
+            final String groupString, final String projectString, final boolean updated)
             throws ParseException, GenericEntityException, JSONException {
 
         List<JSONObject> worklogs = new ArrayList<JSONObject>();
@@ -350,11 +410,19 @@ public class WorklogQueryResource {
         User user = authenticationContext.getLoggedInUser();
 
         // Date expr
-        EntityExpr startExpr = new EntityExpr("startdate", EntityOperator.GREATER_THAN_EQUAL_TO,
-                new Timestamp(startDate.getTimeInMillis()));
-        EntityExpr endExpr = new EntityExpr("startdate", EntityOperator.LESS_THAN,
-                new Timestamp(endDate.getTimeInMillis()));
-
+        EntityExpr startExpr;
+        EntityExpr endExpr;
+        if (updated) {
+            startExpr = new EntityExpr("updated", EntityOperator.GREATER_THAN_EQUAL_TO,
+                    new Timestamp(startDate.getTimeInMillis()));
+            endExpr = new EntityExpr("updated", EntityOperator.LESS_THAN,
+                    new Timestamp(endDate.getTimeInMillis()));
+        } else {
+            startExpr = new EntityExpr("startdate", EntityOperator.GREATER_THAN_EQUAL_TO,
+                    new Timestamp(startDate.getTimeInMillis()));
+            endExpr = new EntityExpr("startdate", EntityOperator.LESS_THAN,
+                    new Timestamp(endDate.getTimeInMillis()));
+        }
         // set the users condition
         List<EntityExpr> usersConditions = createUsersConditions(userString, groupString);
         EntityCondition userCondition = new EntityConditionList(usersConditions, EntityOperator.OR);
