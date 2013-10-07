@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>org.everit.jira.worklog.query.plugin</groupId>
 		<artifactId>main</artifactId>
-		<version>1.1.0</version>
+		<version>1.1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.everit.jira.worklog.query.plugin.core</artifactId>
@@ -38,6 +38,30 @@
 
 	<build>
 		<plugins>
+		    <plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<index>true</index>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>jwq-depjar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+						    <appendAssemblyId>false</appendAssemblyId>
+                            <descriptor>assembly.xml</descriptor>
+                        </configuration>
+					</execution>
+				</executions>
+			</plugin> 	
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -48,9 +72,11 @@
 						<Import-Package>
 							*
 						</Import-Package>
-						<Export-Package>
-							org.everit.jira.worklog.query.plugin.core
-						</Export-Package>
+						<Export-Package/>
+<!-- 						<Export-Package> -->
+<!-- 							org.everit.jira.worklog.query.plugin.core -->
+<!-- 						</Export-Package> -->
+						<_failok>true</_failok>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -62,28 +88,30 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>1.5.8</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.atlassian.usercompatibility</groupId>
+		    <artifactId>usercompatibility-jira</artifactId>
+		    <version>0.18</version>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.crowd</groupId>
 			<artifactId>embedded-crowd-api</artifactId>
 			<version>2.2.8</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.ofbiz</groupId>
 			<artifactId>entityengine</artifactId>
 			<version>1.0.3</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.jira</groupId>
 			<artifactId>atlassian-jira</artifactId>
 			<version>${jira.version}</version>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
