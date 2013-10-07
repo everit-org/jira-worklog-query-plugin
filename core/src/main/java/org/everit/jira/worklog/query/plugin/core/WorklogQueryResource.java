@@ -52,6 +52,7 @@ import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.usercompatibility.UserCompatibilityHelper;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
@@ -206,7 +207,7 @@ public class WorklogQueryResource {
      * 
      * @return The list of the users conditions.
      */
-    private List<EntityExpr> createUsersConditions(final String user, final String group) {
+    private List<EntityExpr> createUsersConditions(final String userName, final String group) {
         List<EntityExpr> usersConditions = new ArrayList<EntityExpr>();
         if ((group != null) && (group.length() != 0)) {
             Set<User> groupUsers = componentManagerInstance.getUserUtil().getAllUsersInGroupNames(
@@ -214,10 +215,13 @@ public class WorklogQueryResource {
             Set<String> assigneeIds = new TreeSet<String>();
             for (User groupUser : groupUsers) {
                 assigneeIds.add(groupUser.getName());
-                usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, groupUser.getName()));
+                String userKey = UserCompatibilityHelper.getKeyForUser(groupUser);
+                usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, userKey));
             }
-        } else if ((user != null) && (user.length() != 0)) {
-            usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, user));
+        } else if ((userName != null) && (userName.length() != 0)) {
+            User user = ComponentManager.getInstance().getUserUtil().getUserObject(userName);
+            String userKey = UserCompatibilityHelper.getKeyForUser(user);
+            usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, userKey));
         }
         return usersConditions;
     }
