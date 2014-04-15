@@ -246,6 +246,11 @@ public class WorklogQueryResource {
         IssueManager issueManager = ComponentManager.getInstance().getIssueManager();
         String issueKey = issueManager.getIssueObject(worklog.getLong("issue")).getKey();
         jsonWorklog.put("issueKey", issueKey);
+        
+        //TODO JIRA version 6.2.2 must be configured in POM to get the .getUserByKey method of DefaultUserManager 
+        //implementation of the UserManager interface.
+        //It should be sth like this: String userName = defaultUserManager.getUserByKey(worklog.getString("author"))
+        //.getName
         String userName = worklog.getString("author");
         jsonWorklog.put("userId", userName);
         long timeSpentInSec = worklog.getLong("timeworked").longValue();
