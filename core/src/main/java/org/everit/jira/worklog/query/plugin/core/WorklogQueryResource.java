@@ -246,7 +246,9 @@ public class WorklogQueryResource {
         IssueManager issueManager = ComponentManager.getInstance().getIssueManager();
         String issueKey = issueManager.getIssueObject(worklog.getLong("issue")).getKey();
         jsonWorklog.put("issueKey", issueKey);
-        String userName = worklog.getString("author");
+        String userKey = worklog.getString("author");
+        User user = UserCompatibilityHelper.getUserForKey(userKey);
+        String userName = user.getName();
         jsonWorklog.put("userId", userName);
         long timeSpentInSec = worklog.getLong("timeworked").longValue();
         jsonWorklog.put("duration", timeSpentInSec);
