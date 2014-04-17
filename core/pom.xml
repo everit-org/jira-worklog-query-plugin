@@ -38,30 +38,6 @@
 
 	<build>
 		<plugins>
-		    <plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<archive>
-						<index>true</index>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
-				<executions>
-					<execution>
-						<id>jwq-depjar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-						    <appendAssemblyId>false</appendAssemblyId>
-                            <descriptor>assembly.xml</descriptor>
-                        </configuration>
-					</execution>
-				</executions>
-			</plugin> 	
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
@@ -72,11 +48,10 @@
 						<Import-Package>
 							*
 						</Import-Package>
-						<Export-Package/>
-<!-- 						<Export-Package> -->
-<!-- 							org.everit.jira.worklog.query.plugin.core -->
-<!-- 						</Export-Package> -->
-						<_failok>true</_failok>
+						<Export-Package />
+						<Embed-Dependency>
+							groupId=com.atlassian.usercompatibility;usercompatibility-jira
+						</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -91,9 +66,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.atlassian.usercompatibility</groupId>
-		    <artifactId>usercompatibility-jira</artifactId>
-		    <version>0.18</version>
+			<groupId>com.atlassian.usercompatibility</groupId>
+			<artifactId>usercompatibility-jira</artifactId>
+			<version>0.18</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.atlassian.crowd</groupId>
