@@ -29,7 +29,7 @@
 	<parent>
 		<groupId>org.everit.jira.worklog.query.plugin</groupId>
 		<artifactId>main</artifactId>
-		<version>1.1.1-SNAPSHOT</version>
+		<version>1.1.1</version>
 	</parent>
 
 	<artifactId>org.everit.jira.worklog.query.plugin.core</artifactId>
