@@ -43,7 +43,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.ofbiz.core.entity.GenericEntityException;
-import org.ofbiz.core.entity.GenericValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,8 +155,7 @@ public class WorklogQueryResource {
     }
 
     /**
-     * Create a list of entity expression. The expressions define the worklog query condition for issue parameter.
-     * Filtering based project permission and the query projectString parameter.
+     * Create a list projects. Filtering based project permission and the query projectString parameter.
      *
      * @param projectString
      *            The query projectString parameter.
@@ -168,37 +166,6 @@ public class WorklogQueryResource {
      * @throws GenericEntityException
      *             If the GenericDelegator throw a GenericEntityException.
      */
-    // private List<EntityExpr> createIssuesConditions(final String projectString, final User user)
-    // throws GenericEntityException {
-    //
-    // List<Project> projects = (List<Project>) componentManagerInstance.getPermissionManager().getProjectObjects(
-    // Permissions.BROWSE,
-    // user);
-    //
-    // // Issues query
-    // List<EntityExpr> issuesProjectExpr = new ArrayList<EntityExpr>();
-    // EntityExpr projectExpr;
-    // for (Project project : projects) {
-    // if ((projectString != null) && (projectString.length() != 0)) {
-    // if (projectString.equals(project.getKey())) {
-    // projectExpr = new EntityExpr("project", EntityOperator.EQUALS, project.getId());
-    // issuesProjectExpr.add(projectExpr);
-    // }
-    // } else {
-    // projectExpr = new EntityExpr("project", EntityOperator.EQUALS, project.getId());
-    // issuesProjectExpr.add(projectExpr);
-    // }
-    // }
-    // List<EntityExpr> issuesConditions = new ArrayList<EntityExpr>();
-    // if (!issuesProjectExpr.isEmpty()) {
-    // List<GenericValue> issueGvList = CoreFactory.getGenericDelegator().findByOr("Issue", issuesProjectExpr);
-    // for (GenericValue issue : issueGvList) {
-    // issuesConditions.add(new EntityExpr("issue", EntityOperator.EQUALS, issue.getLong("id")));
-    // }
-    // }
-    // return issuesConditions;
-    // }
-
     private List<String> createProjects(final String projectString, final User user) {
 
         List<Project> projects = (List<Project>) componentManagerInstance.getPermissionManager().getProjectObjects(
@@ -238,40 +205,10 @@ public class WorklogQueryResource {
     }
 
     /**
-     * Create a list of entity expressions. The expressions define the worklog query condition for author parameter.
-     * Collect the given group users or the given user.
+     * Convert a ResultSet object to a JSonObject.
      *
-     * @param user
-     *            The query user parameter.
-     * @param group
-     *            The query gruopString parameter.
-     *
-     * @return The list of the users conditions.
-     */
-    // private List<EntityExpr> createUsersConditions(final String userName, final String group) {
-    // List<EntityExpr> usersConditions = new ArrayList<EntityExpr>();
-    // if ((group != null) && (group.length() != 0)) {
-    // Set<User> groupUsers = componentManagerInstance.getUserUtil().getAllUsersInGroupNames(
-    // Arrays.asList(new String[] { group }));
-    // Set<String> assigneeIds = new TreeSet<String>();
-    // for (User groupUser : groupUsers) {
-    // assigneeIds.add(groupUser.getName());
-    // String userKey = UserCompatibilityHelper.getKeyForUser(groupUser);
-    // usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, userKey));
-    // }
-    // } else if ((userName != null) && (userName.length() != 0)) {
-    // User user = ComponentManager.getInstance().getUserUtil().getUserObject(userName);
-    // String userKey = UserCompatibilityHelper.getKeyForUser(user);
-    // usersConditions.add(new EntityExpr("author", EntityOperator.EQUALS, userKey));
-    // }
-    // return usersConditions;
-    // }
-
-    /**
-     * Convert the genericvalue worklog to a JSonObject.
-     *
-     * @param worklog
-     *            The worklog.
+     * @param rs
+     *            The ResultSet worklog.
      * @return The worklog JSonObject.
      *
      * @throws JSONException
@@ -279,19 +216,23 @@ public class WorklogQueryResource {
      * @throws ParseException
      *             If ParserException when parse the startDate.
      */
-    private JSONObject createWorklogJSONObject(final GenericValue worklog) throws JSONException, ParseException {
+    private JSONObject createWorklogJSONObject(final ResultSet rs) throws JSONException, SQLException, ParseException {
         JSONObject jsonWorklog = new JSONObject();
-        jsonWorklog.put("id", worklog.getLong("id"));
-        String startDate = worklog.getString("startdate");
-        jsonWorklog.put("startDate", DateTimeConverterUtil.stringDateToISO8601FormatString(startDate));
+        jsonWorklog.put("id", rs.getLong("id"));
+
+        Timestamp sDate = rs.getTimestamp("startdate");
+        jsonWorklog.put("startDate", DateTimeConverterUtil.stringDateToISO8601FormatString(sDate.toString()));
+
         IssueManager issueManager = ComponentManager.getInstance().getIssueManager();
-        String issueKey = issueManager.getIssueObject(worklog.getLong("issue")).getKey();
+        String issueKey = issueManager.getIssueObject(rs.getLong("issueid")).getKey();
         jsonWorklog.put("issueKey", issueKey);
-        String userKey = worklog.getString("author");
+
+        String userKey = rs.getString("author");
         User user = UserCompatibilityHelper.getUserForKey(userKey);
         String userName = user.getName();
         jsonWorklog.put("userId", userName);
-        long timeSpentInSec = worklog.getLong("timeworked").longValue();
+
+        long timeSpentInSec = rs.getLong("timeworked");
         jsonWorklog.put("duration", timeSpentInSec);
         return jsonWorklog;
     }
@@ -422,6 +363,30 @@ public class WorklogQueryResource {
         return false;
     }
 
+    /**
+     * The method to query worklogs.
+     *
+     * @param startDate
+     *            The startDate calendar parameter.
+     * @param endDate
+     *            The endDate calendar parameter.
+     * @param userString
+     *            The user String parameter.
+     * @param groupString
+     *            The group String parameter.
+     * @param projectString
+     *            The project String parameter.
+     * @param updated
+     *            True if the method give back the worklogs which were created or updated in the given period, else
+     *            false. The false give back the worklogs of the period.
+     * @return JSONString what contains a list of queried worklogs.
+     * @throws ParseException
+     *             If can't parse the dates.
+     * @throws GenericEntityException
+     *             If the GenericDelegator throw a GenericEntityException.
+     * @throws JSONException
+     *             If the createWorklogJSONObject method throw a JSONException.
+     */
     private String worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
             final String groupString, final String projectString, final boolean updated) throws DataAccessException,
             SQLException, JSONException, ParseException {
@@ -434,18 +399,19 @@ public class WorklogQueryResource {
 
         List<String> projects = createProjects(projectString, loggedInUser);
         List<String> users = createUsers(userString, groupString);
+        String schemaName = new DefaultOfBizConnectionFactory().getDatasourceInfo().getSchemaName();
 
         if (!projects.isEmpty() && !users.isEmpty()) {
 
             StringBuilder projectsPreparedParams = new StringBuilder();
-            for (String project : projects) {
+            for (int i = 0; i < projects.size(); i++) {
                 projectsPreparedParams.append("?,");
             }
             if (projectsPreparedParams.length() > 0) {
                 projectsPreparedParams.deleteCharAt(projectsPreparedParams.length() - 1);
             }
             StringBuilder usersPreparedParams = new StringBuilder();
-            for (String user : users) {
+            for (int i = 0; i < users.size(); i++) {
                 usersPreparedParams.append("?,");
             }
             if (usersPreparedParams.length() > 0) {
@@ -453,7 +419,7 @@ public class WorklogQueryResource {
             }
 
             String query = "SELECT worklog.id, worklog.startdate, worklog.issueid, worklog.author, worklog.timeworked"
-                    + " FROM project, worklog, jiraissue"
+                    + " FROM " + schemaName + ".project, " + schemaName + ".worklog, " + schemaName + ".jiraissue"
                     + " WHERE jiraissue.project=project.id AND worklog.issueid=jiraissue.id"
                     + " AND worklog.startdate>=? AND worklog.startdate<?"
                     + " AND worklog.author IN ("
@@ -477,27 +443,11 @@ public class WorklogQueryResource {
             ResultSet rs = ps.executeQuery();
             while (rs.next())
             {
-                JSONObject jsonWorklog = new JSONObject();
-                jsonWorklog.put("id", rs.getLong("id"));
-
-                Timestamp sDate = rs.getTimestamp("startdate");
-                jsonWorklog.put("startDate",
-                        DateTimeConverterUtil.stringDateToISO8601FormatString(sDate.toString()));
-
-                IssueManager issueManager = ComponentManager.getInstance().getIssueManager();
-                String issueKey = issueManager.getIssueObject(rs.getLong("issueid")).getKey();
-                jsonWorklog.put("issueKey", issueKey);
-
-                String userKey = rs.getString("author");
-                User user = UserCompatibilityHelper.getUserForKey(userKey);
-                String userName = user.getName();
-                jsonWorklog.put("userId", userName);
-
-                long timeSpentInSec = rs.getLong("timeworked");
-                jsonWorklog.put("duration", timeSpentInSec);
-
-                worklogs.add(jsonWorklog);
+                worklogs.add(createWorklogJSONObject(rs));
             }
+            rs.close();
+            ps.close();
+            conn.close();
         }
 
         Collections.sort(worklogs, new Comparator<JSONObject>() {
@@ -517,78 +467,4 @@ public class WorklogQueryResource {
         jsonArrayResult.put(worklogs);
         return jsonArrayResult.toString();
     }
-
-    /**
-     * The method build a worklog query.
-     *
-     * @param startDate
-     *            The startDate calendar parameter.
-     * @param endDate
-     *            The endDate calendar parameter.
-     * @param userString
-     *            The user String parameter.
-     * @param groupString
-     *            The group String parameter.
-     * @param projectString
-     *            The project String parameter.
-     * @param updated
-     *            True if the method give back the worklogs which were created or updated in the given period, else
-     *            false. The false give back the worklogs of the period.
-     * @return JSONString what contains a list of queried worklogs.
-     * @throws ParseException
-     *             If can't parse the dates.
-     * @throws GenericEntityException
-     *             If the GenericDelegator throw a GenericEntityException.
-     * @throws JSONException
-     *             If the createWorklogJSONObject method throw a JSONException.
-     */
-    // private String worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
-    // final String groupString, final String projectString, final boolean updated)
-    // throws ParseException, GenericEntityException, JSONException {
-    //
-    // List<JSONObject> worklogs = new ArrayList<JSONObject>();
-    //
-    // componentManagerInstance = ComponentManager.getInstance();
-    // JiraAuthenticationContext authenticationContext = componentManagerInstance.getJiraAuthenticationContext();
-    // User user = authenticationContext.getLoggedInUser();
-    //
-    // // Date expr
-    // EntityExpr startExpr;
-    // EntityExpr endExpr;
-    // if (updated) {
-    // startExpr = new EntityExpr("updated", EntityOperator.GREATER_THAN_EQUAL_TO,
-    // new Timestamp(startDate.getTimeInMillis()));
-    // endExpr = new EntityExpr("updated", EntityOperator.LESS_THAN,
-    // new Timestamp(endDate.getTimeInMillis()));
-    // } else {
-    // startExpr = new EntityExpr("startdate", EntityOperator.GREATER_THAN_EQUAL_TO,
-    // new Timestamp(startDate.getTimeInMillis()));
-    // endExpr = new EntityExpr("startdate", EntityOperator.LESS_THAN,
-    // new Timestamp(endDate.getTimeInMillis()));
-    // }
-    // // set the users condition
-    // List<EntityExpr> usersConditions = createUsersConditions(userString, groupString);
-    // EntityCondition userCondition = new EntityConditionList(usersConditions, EntityOperator.OR);
-    // // set the issue condition
-    // List<EntityExpr> issuesConditions = createIssuesConditions(projectString, user);
-    // EntityCondition issueCond = new EntityConditionList(issuesConditions, EntityOperator.OR);
-    // // put together the issue and user condition
-    // if (!usersConditions.isEmpty() && !issuesConditions.isEmpty()) {
-    // EntityExpr userAndIssueExpr = new EntityExpr(userCondition, EntityOperator.AND, issueCond);
-    //
-    // List<EntityExpr> exprList = new ArrayList<EntityExpr>();
-    // exprList.add(startExpr);
-    // exprList.add(endExpr);
-    // exprList.add(userAndIssueExpr);
-    //
-    // List<GenericValue> worklogGVList = CoreFactory.getGenericDelegator().findByAnd("Worklog", exprList);
-    //
-    // for (GenericValue worklogGv : worklogGVList) {
-    // worklogs.add(createWorklogJSONObject(worklogGv));
-    // }
-    // }
-    // JSONArray jsonArrayResult = new JSONArray();
-    // jsonArrayResult.put(worklogs);
-    // return jsonArrayResult.toString();
-    // }
 }
