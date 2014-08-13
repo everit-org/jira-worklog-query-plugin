@@ -111,7 +111,7 @@ public final class DateTimeConverterUtil {
      * @throws ParseException
      *             If cannot parse the String to Date.
      */
-    public static String stringDateToISO8601FormateString(final String dateString) throws ParseException {
+    public static String stringDateToISO8601FormatString(final String dateString) throws ParseException {
         DateFormat dateFormat = new SimpleDateFormat(JIRA_OUTPUT_DATE_TIME_FORMAT);
         Date date = dateFormat.parse(dateString);
         return DateTimeConverterUtil.dateToString(date);
