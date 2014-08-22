@@ -41,7 +41,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <properties>
-    <jira.version>4.4</jira.version>
+    <jira.version>5.2</jira.version>
   </properties>
 
   <modules>
@@ -99,24 +99,11 @@
       </snapshots>
     </repository>
     <repository>
-      <id>public</id>
-      <url>https://maven.atlassian.com/public</url>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2</url>
       <releases>
         <enabled>true</enabled>
       </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>atlassianinside</id>
-      <url>https://repository.atlassian.com/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </repository>
     <repository>
       <id>atlassian-public</id>
@@ -130,6 +117,14 @@
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
+    </repository>
+    <repository>
+      <id>opencast-public</id>
+      <url>http://repository.opencastproject.org/nexus/content/repositories/public/</url>
+    </repository>
+    <repository>
+      <id>mindprod</id>
+      <url>http://nexus.hiringboss.com/nexus/content/repositories/thirdparty/</url>
     </repository>
   </repositories>
 
@@ -155,6 +150,13 @@
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+    </pluginRepository>
+    <pluginRepository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
     </pluginRepository>
   </pluginRepositories>
 
