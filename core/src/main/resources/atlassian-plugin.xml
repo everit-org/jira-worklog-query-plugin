@@ -35,8 +35,4 @@
     <description>Provides the REST resource for the Worklog Query plugin.</description>
   </rest>
 
-  <component-import key="beanBuilderFactory" class="com.atlassian.jira.rest.v2.issue.builder.BeanBuilderFactoryImpl" public="true">
-    <interface>com.atlassian.jira.rest.v2.issue.builder.BeanBuilderFactory</interface>
-  </component-import>
-
 </atlassian-plugin>

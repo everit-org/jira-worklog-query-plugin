@@ -46,8 +46,8 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Import-Package>
-              com.atlassian.jira.rest.v2.*;version="5.2.11",
-              com.atlassian.jira.rest.api.*;version="5.2.11",
+              com.atlassian.jira.rest.v2.*;version="${jira.version}",
+              com.atlassian.jira.rest.api.*;version="${jira.version}",
               *
             </Import-Package>
             <Export-Package />
@@ -64,27 +64,9 @@
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-rest-plugin</artifactId>
-      <version>5.2.11</version>
+      <version>${jira.version}</version>
       <scope>provided</scope>
     </dependency>
-<!--     <dependency> -->
-<!--       <groupId>com.atlassian.jira</groupId> -->
-<!--       <artifactId>jira-rest-api</artifactId> -->
-<!--       <version>5.2.11</version> -->
-<!--       <scope>provided</scope> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>com.atlassian.jira</groupId> -->
-<!--       <artifactId>jira-rest-api</artifactId> -->
-<!--       <version>${jira.version}</version> -->
-<!--       <type>pom</type> -->
-<!--     </dependency> -->
-<!--     <dependency> -->
-<!--       <groupId>com.atlassian.jira</groupId> -->
-<!--       <artifactId>jira-rest-java-client</artifactId> -->
-<!--       <version>2.0.0-m2</version> -->
-<!--       <scope>provided</scope> -->
-<!--     </dependency> -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
