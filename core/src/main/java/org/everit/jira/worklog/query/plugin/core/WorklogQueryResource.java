@@ -70,7 +70,6 @@ import com.atlassian.jira.issue.fields.OrderableField;
 import com.atlassian.jira.issue.fields.ProjectSystemField;
 import com.atlassian.jira.issue.fields.layout.field.FieldLayout;
 import com.atlassian.jira.issue.fields.layout.field.FieldLayoutItem;
-import com.atlassian.jira.issue.fields.layout.field.FieldLayoutManager;
 import com.atlassian.jira.issue.fields.rest.FieldJsonRepresentation;
 import com.atlassian.jira.issue.fields.rest.RestAwareField;
 import com.atlassian.jira.issue.search.SearchException;
@@ -149,16 +148,15 @@ public class WorklogQueryResource<V> {
      */
     private static final int LAST_SECOND_OF_MINUTE = 59;
 
-    private static final Integer DEFAULT_STARTAT_PARAM = 0;
-    private static final Integer DEFAULT_MAXRESULT_PARAM = 25;
+    private static final int DEFAULT_STARTAT_PARAM = 0;
+    private static final int DEFAULT_MAXRESULT_PARAM = 25;
 
     private void addFields(final Issue issue, final IssueBean bean)
     {
         // iterate over all the visible layout items from the field layout for this issue and attempt to add them
         // to the result
-        FieldLayoutManager fieldManager = ComponentAccessor.getFieldLayoutManager();
-        User loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
-        final FieldLayout layout = fieldManager.getFieldLayout(issue);
+        final User loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+        final FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
         final List<FieldLayoutItem> fieldLayoutItems = layout.getVisibleLayoutItems(
                 loggedInUser, issue.getProjectObject(),
                 CollectionBuilder.list(issue.getIssueTypeObject().getId()));
@@ -196,7 +194,6 @@ public class WorklogQueryResource<V> {
         {
             // ignored...display as much as we can.
         }
-
     }
 
     private void addRestAwareField(final Issue issue, final IssueBean bean, final Field field,
@@ -381,7 +378,7 @@ public class WorklogQueryResource<V> {
      *             If ParserException when parse the startDate.
      */
     private JSONObject createWorklogJSONObject(final ResultSet rs, final List<StringList> fields) throws JSONException,
-    SQLException, ParseException {
+            SQLException, ParseException {
         JSONObject jsonWorklog = new JSONObject();
         jsonWorklog.put("id", rs.getLong("id"));
 
@@ -538,11 +535,11 @@ public class WorklogQueryResource<V> {
             @QueryParam("user") final String user,
             @QueryParam("group") final String group,
             @QueryParam("jql") String jql,
-            @DefaultValue("0") @QueryParam("startAt") Integer startAt,
-            @DefaultValue("25") @QueryParam("maxResults") Integer maxResults,
+            @DefaultValue("0") @QueryParam("startAt") int startAt,
+            @DefaultValue("25") @QueryParam("maxResults") int maxResults,
             @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-            throws
-            URISyntaxException, SQLException {
+                    throws
+                    URISyntaxException, SQLException {
 
         checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -558,10 +555,10 @@ public class WorklogQueryResource<V> {
         } catch (ParseException e) {
             throw new RESTException(Response.Status.BAD_REQUEST, "Cannot parse the 'endDate' parameter: " + endDate);
         }
-        if (!DEFAULT_STARTAT_PARAM.equals(startAt) && (startAt < 0)) {
+        if (startAt < 0) {
             startAt = DEFAULT_STARTAT_PARAM;
         }
-        if (!DEFAULT_MAXRESULT_PARAM.equals(maxResults) && (maxResults < 0)) {
+        if (maxResults < 0) {
             maxResults = DEFAULT_MAXRESULT_PARAM;
         }
         List<String> users = createUsers(user, group);
@@ -594,7 +591,6 @@ public class WorklogQueryResource<V> {
                 + "/rest/api/2/issue/";
         boolean isEmptyField = StringList.joinLists(fields).asList().contains("emptyFieldValue");
         List<IssueBeanWithTimespent> issueBeans = new ArrayList<IssueBeanWithTimespent>();
-
         for (int i = 0, j = 0; ((j < issues.size()) && (i < (startAt + maxResults)));) {
             Issue issue = issues.get(j);
             if (result.containsKey(issue.getId())) {
@@ -762,8 +758,8 @@ public class WorklogQueryResource<V> {
      */
     private String worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
             final String groupString, final String projectString, final List<StringList> fields, final boolean updated)
-                    throws DataAccessException,
-                    SQLException, JSONException, ParseException {
+            throws DataAccessException,
+            SQLException, JSONException, ParseException {
 
         List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
