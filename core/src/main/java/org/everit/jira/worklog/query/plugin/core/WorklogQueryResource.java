@@ -149,6 +149,9 @@ public class WorklogQueryResource<V> {
      */
     private static final int LAST_SECOND_OF_MINUTE = 59;
 
+    private static final Integer DEFAULT_STARTAT_PARAM = 0;
+    private static final Integer DEFAULT_MAXRESULT_PARAM = 25;
+
     private void addFields(final Issue issue, final IssueBean bean)
     {
         // iterate over all the visible layout items from the field layout for this issue and attempt to add them
@@ -529,15 +532,17 @@ public class WorklogQueryResource<V> {
     @GET
     @Path("/worklogsByIssues")
     @Produces({ MediaType.APPLICATION_JSON })
-    public SearchResultsBeanWithTimespent findWorklogsByIssues(@QueryParam("startDate") final String startDate,
+    public SearchResultsBeanWithTimespent findWorklogsByIssues(
+            @QueryParam("startDate") final String startDate,
             @QueryParam("endDate") final String endDate,
             @QueryParam("user") final String user,
             @QueryParam("group") final String group,
             @QueryParam("jql") String jql,
+            @DefaultValue("0") @QueryParam("startAt") Integer startAt,
+            @DefaultValue("25") @QueryParam("maxResults") Integer maxResults,
             @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-                    throws FieldException,
-                    URISyntaxException,
-                    JSONException, SQLException {
+            throws
+            URISyntaxException, SQLException {
 
         checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -552,6 +557,12 @@ public class WorklogQueryResource<V> {
             endDateCalendar = convertEndDate(endDate);
         } catch (ParseException e) {
             throw new RESTException(Response.Status.BAD_REQUEST, "Cannot parse the 'endDate' parameter: " + endDate);
+        }
+        if (!DEFAULT_STARTAT_PARAM.equals(startAt) && (startAt < 0)) {
+            startAt = DEFAULT_STARTAT_PARAM;
+        }
+        if (!DEFAULT_MAXRESULT_PARAM.equals(maxResults) && (maxResults < 0)) {
+            maxResults = DEFAULT_MAXRESULT_PARAM;
         }
         List<String> users = createUsers(user, group);
         if (users.isEmpty()) {
@@ -574,6 +585,7 @@ public class WorklogQueryResource<V> {
         for (Issue issue : issues) {
             issueIds.add(issue.getId());
         }
+        Collections.reverse(issues);
 
         Map<Long, Long> result = sumWorklogs(startDateCalendar, endDateCalendar, users, issueIds);
 
@@ -582,19 +594,25 @@ public class WorklogQueryResource<V> {
                 + "/rest/api/2/issue/";
         boolean isEmptyField = StringList.joinLists(fields).asList().contains("emptyFieldValue");
         List<IssueBeanWithTimespent> issueBeans = new ArrayList<IssueBeanWithTimespent>();
-        for (Issue issue : issues) {
+
+        for (int i = 0, j = 0; ((j < issues.size()) && (i < (startAt + maxResults)));) {
+            Issue issue = issues.get(j);
             if (result.containsKey(issue.getId())) {
-                IssueBeanWithTimespent bean = new IssueBeanWithTimespent(issue.getId(), issue.getKey(),
-                        new URI(baseUrl + issue.getId()), result.get(issue.getId()));
-                bean.fieldsToInclude(includedFields);
-                if (!isEmptyField) {
-                    addFields(issue, bean);
+                if ((i >= startAt)) {
+                    IssueBeanWithTimespent bean = new IssueBeanWithTimespent(issue.getId(), issue.getKey(),
+                            new URI(baseUrl + issue.getId()), result.get(issue.getId()));
+                    bean.fieldsToInclude(includedFields);
+                    if (!isEmptyField) {
+                        addFields(issue, bean);
+                    }
+                    issueBeans.add(bean);
                 }
-                issueBeans.add(bean);
+                i++;
             }
+            j++;
         }
-        SearchResultsBeanWithTimespent searchResultsBean = new SearchResultsBeanWithTimespent(null, null,
-                null, issueBeans);
+        SearchResultsBeanWithTimespent searchResultsBean = new SearchResultsBeanWithTimespent(startAt, maxResults,
+                result.size(), issueBeans);
 
         return searchResultsBean;
     }
