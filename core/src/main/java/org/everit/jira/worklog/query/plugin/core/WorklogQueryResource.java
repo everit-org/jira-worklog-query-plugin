@@ -378,7 +378,7 @@ public class WorklogQueryResource<V> {
      *             If ParserException when parse the startDate.
      */
     private JSONObject createWorklogJSONObject(final ResultSet rs, final List<StringList> fields) throws JSONException,
-            SQLException, ParseException {
+    SQLException, ParseException {
         JSONObject jsonWorklog = new JSONObject();
         jsonWorklog.put("id", rs.getLong("id"));
 
@@ -517,8 +517,7 @@ public class WorklogQueryResource<V> {
                     .entity("Cannot parse the 'endDate' parameter: " + endDate).build();
         }
         try {
-            return Response.ok(worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields, false))
-                    .build();
+            return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields, false);
         } catch (Exception e) {
             LOGGER.error("Failed to query the worklogs", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -538,8 +537,8 @@ public class WorklogQueryResource<V> {
             @DefaultValue("0") @QueryParam("startAt") int startAt,
             @DefaultValue("25") @QueryParam("maxResults") int maxResults,
             @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-                    throws
-                    URISyntaxException, SQLException {
+            throws
+            URISyntaxException, SQLException {
 
         checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -756,18 +755,27 @@ public class WorklogQueryResource<V> {
      * @throws JSONException
      *             If the createWorklogJSONObject method throw a JSONException.
      */
-    private String worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
+    private Response worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
             final String groupString, final String projectString, final List<StringList> fields, final boolean updated)
-            throws DataAccessException,
-            SQLException, JSONException, ParseException {
+                    throws DataAccessException,
+                    SQLException, JSONException, ParseException {
 
         List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
         JiraAuthenticationContext authenticationContext = ComponentAccessor.getJiraAuthenticationContext();
         User loggedInUser = authenticationContext.getLoggedInUser();
-
         List<Long> projects = createProjects(projectString, loggedInUser);
+        if ((projectString != null) && projects.isEmpty()) {
+            return Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity("Error running search: There is no project matching the given 'project' parameter: "
+                            + projectString).build();
+        }
         List<String> users = createUsers(userString, groupString);
+        if (users.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Error running search: There is no group or user matching the given parameters.").build();
+        }
         String schemaName = new DefaultOfBizConnectionFactory().getDatasourceInfo().getSchemaName();
         String worklogTablename = "";
         String issueTablename = "";
@@ -843,6 +851,7 @@ public class WorklogQueryResource<V> {
         });
         JSONObject jsonResult = new JSONObject();
         jsonResult.put("worklogs", worklogs);
-        return jsonResult.toString();
+        return Response.ok(jsonResult.toString()).build();
+        // return jsonResult.toString();
     }
 }
