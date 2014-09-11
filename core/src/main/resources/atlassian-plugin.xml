@@ -21,17 +21,18 @@
 
 -->
 <atlassian-plugin key="org.everit.jira.worklog.query.plugin.core" name="Jira Worklog Query Plugin"
-	plugins-version="2">
+  plugins-version="2">
 
-	<plugin-info>
-		<version>1.1.2-SNAPSHOT</version>
-		<description>Jira Worklog Query Plugin</description>
-		<application-version min="4.4" />
-		<vendor name="EverIT Kft." url="https://www.everit.biz" />
-	</plugin-info>
+  <plugin-info>
+    <version>1.2.0-SNAPSHOT</version>
+    <description>Jira Worklog Query Plugin</description>
+    <application-version min="5.0" />
+    <vendor name="EverIT Kft." url="https://www.everit.biz" />
+    <param name="atlassian-data-center-compatible">true</param>
+  </plugin-info>
 
-	<rest key="JWQP" path="/jira-worklog-query" version="1.1.2-SNAPSHOT">
-		<description>Provides the REST resource for the Worklog Query plugin.</description>
-	</rest>
+  <rest key="JWQP" path="/jira-worklog-query" version="1.2.0-SNAPSHOT">
+    <description>Provides the REST resource for the Worklog Query plugin.</description>
+  </rest>
 
 </atlassian-plugin>
