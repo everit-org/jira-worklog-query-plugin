@@ -24,7 +24,7 @@ Available response representations:
 
 * 200 - application/json 
    Example:
-   ```
+```
 	{
 	  "worklogs": [
 	    {
@@ -43,12 +43,12 @@ Available response representations:
 	    }
 	  ]
 	}
-   ```
+```
 * 400 - Returned if there is a problem running the query.
    Example:
-   ```
+```
    Error running search: There is no project matching the given 'project' parameter: NOPROJECT
-   ```
+```
    
 ##Summarize worked time by issues
 **_/rest/jira-worklog-query/1.2.0/find/worklogsByIssues_**
@@ -71,7 +71,7 @@ Available response representations:
 
 * 200 - application/json 
    Example response with no additional fields parameter:
-	```
+```
 	{
 	  "startAt": 0,
 	  "maxResults": 25,
@@ -91,9 +91,9 @@ Available response representations:
 	    }
 	  ]
 	}
-	```
+```
 	Example response with "fields=summary,progress" parameter:
-	```
+```
 	{
 	  "startAt": 0,
 	  "maxResults": 25,
@@ -115,11 +115,11 @@ Available response representations:
 	    }
 	  ]
 	}
-	```
+```
 * 400 - application/json 
    Returned if there is a problem running the query.
    Example:
-   ```
+```
 	   {
 	  "errorMessages": [
 	    "Cannot parse the 'startDate' parameter: 2013-0ghjg6-25"
@@ -127,4 +127,4 @@ Available response representations:
 	  "errors": {
 	  }
 	}
-   ```
+```
