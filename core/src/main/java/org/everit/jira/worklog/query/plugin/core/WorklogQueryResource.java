@@ -849,9 +849,13 @@ public class WorklogQueryResource<V> {
                 return a > b ? +1 : a < b ? -1 : 0;
             }
         });
-        JSONObject jsonResult = new JSONObject();
-        jsonResult.put("worklogs", worklogs);
-        return Response.ok(jsonResult.toString()).build();
-        // return jsonResult.toString();
+        JSONArray jsonArrayResult = new JSONArray();
+        jsonArrayResult.put(worklogs);
+        return Response.ok(jsonArrayResult.toString()).build();
+
+        // 2.0.0
+        // JSONObject jsonResult = new JSONObject();
+        // jsonResult.put("worklogs", worklogs);
+        // return Response.ok(jsonResult.toString()).build();
     }
 }
