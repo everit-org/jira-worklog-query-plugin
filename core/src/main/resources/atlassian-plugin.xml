@@ -24,14 +24,14 @@
   plugins-version="2">
 
   <plugin-info>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
     <description>Jira Worklog Query Plugin</description>
     <application-version min="5.0" />
     <vendor name="EverIT Kft." url="https://www.everit.biz" />
     <param name="atlassian-data-center-compatible">true</param>
   </plugin-info>
 
-  <rest key="JWQP" path="/jira-worklog-query" version="1.2.0-SNAPSHOT">
+  <rest key="JWQP" path="/jira-worklog-query" version="1.2.0">
     <description>Provides the REST resource for the Worklog Query plugin.</description>
   </rest>
 
