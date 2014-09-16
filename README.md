@@ -25,8 +25,8 @@ Available response representations:
 * 200 - application/json 
    Example:
 ```
-	{
-	  "worklogs": [
+	[
+	   [
 	    {
 	      "id": 10204,
 	      "startDate": "2014-07-31T08:00:00+0200",
@@ -42,7 +42,7 @@ Available response representations:
 	      "duration": 2340
 	    }
 	  ]
-	}
+	]
 ```
 * 400 - Returned if there is a problem running the query.
    Example:
@@ -92,7 +92,10 @@ Available response representations:
 	  ]
 	}
 ```
-	Example response with "fields=summary,progress" parameter:
+
+
+   Example response with "fields=summary,progress" parameter:
+	
 ```
 	{
 	  "startAt": 0,
