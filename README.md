@@ -92,7 +92,10 @@ Available response representations:
 	  ]
 	}
 ```
-	Example response with "fields=summary,progress" parameter:
+
+
+   Example response with "fields=summary,progress" parameter:
+	
 ```
 	{
 	  "startAt": 0,
