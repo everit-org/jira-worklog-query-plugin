@@ -86,6 +86,7 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.usercompatibility.UserCompatibilityHelper;
 import com.atlassian.jira.util.collect.CollectionBuilder;
+import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.bean.PagerFilter;
@@ -378,7 +379,7 @@ public class WorklogQueryResource<V> {
      *             If ParserException when parse the startDate.
      */
     private JSONObject createWorklogJSONObject(final ResultSet rs, final List<StringList> fields) throws JSONException,
-    SQLException, ParseException {
+            SQLException, ParseException {
         JSONObject jsonWorklog = new JSONObject();
         jsonWorklog.put("id", rs.getLong("id"));
 
@@ -537,8 +538,8 @@ public class WorklogQueryResource<V> {
             @DefaultValue("0") @QueryParam("startAt") int startAt,
             @DefaultValue("25") @QueryParam("maxResults") int maxResults,
             @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-            throws
-            URISyntaxException, SQLException {
+                    throws
+                    URISyntaxException, SQLException {
 
         checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -757,8 +758,8 @@ public class WorklogQueryResource<V> {
      */
     private Response worklogQuery(final Calendar startDate, final Calendar endDate, final String userString,
             final String groupString, final String projectString, final List<StringList> fields, final boolean updated)
-                    throws DataAccessException,
-                    SQLException, JSONException, ParseException {
+            throws DataAccessException,
+            SQLException, JSONException, ParseException {
 
         List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
