@@ -131,3 +131,5 @@ Available response representations:
 	  }
 	}
 ```
+
+[![Analytics](https://ga-beacon.appspot.com/UA-15041869-4/everit-org/jira-worklog-query-plugin)](https://github.com/igrigorik/ga-beacon)
