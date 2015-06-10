@@ -133,10 +133,9 @@ public class WorklogQueryResource<V> {
     }
   }
 
-  /**
-   * The logger used to log.
-   */
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryResource.class);
+  private static final int DEFAULT_MAXRESULT_PARAM = 25;
+
+  private static final int DEFAULT_STARTAT_PARAM = 0;
 
   /**
    * The last hour of a day.
@@ -152,9 +151,10 @@ public class WorklogQueryResource<V> {
    * The last second of a minute.
    */
   private static final int LAST_SECOND_OF_MINUTE = 59;
-
-  private static final int DEFAULT_STARTAT_PARAM = 0;
-  private static final int DEFAULT_MAXRESULT_PARAM = 25;
+  /**
+   * The logger used to log.
+   */
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryResource.class);
 
   private void addFields(final Issue issue, final IssueBean bean)
   {
@@ -184,8 +184,7 @@ public class WorklogQueryResource<V> {
     try
     {
       final Set<NavigableField> fields = ComponentAccessor.getFieldManager()
-          .getAvailableNavigableFields(
-              loggedInUser);
+          .getAvailableNavigableFields(loggedInUser);
       for (NavigableField field : fields)
       {
         if (!bean.hasField(field.getId()))
@@ -558,8 +557,8 @@ public class WorklogQueryResource<V> {
       @DefaultValue("0") @QueryParam("startAt") int startAt,
       @DefaultValue("25") @QueryParam("maxResults") int maxResults,
       @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-          throws
-          URISyntaxException, SQLException {
+      throws
+      URISyntaxException, SQLException {
 
     checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -810,8 +809,8 @@ public class WorklogQueryResource<V> {
       final String userString,
       final String groupString, final String projectString, final List<StringList> fields,
       final boolean updated)
-          throws DataAccessException,
-          SQLException, JSONException, ParseException {
+      throws DataAccessException,
+      SQLException, JSONException, ParseException {
 
     List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
