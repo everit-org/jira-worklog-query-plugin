@@ -33,8 +33,23 @@ import java.util.Date;
 public final class DateTimeConverterUtil {
 
   /**
+   * The date format of the input parameters.
+   */
+  private static final String INPUT_DATE_FORMAT = "yyyy-MM-dd";
+
+  /**
+   * The date format of JIRA.
+   */
+  private static final String JIRA_OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.s";
+
+  /**
+   * The date format of the output.
+   */
+  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+
+  /**
    * Convert the date to String ({@value #OUTPUT_DATE_TIME_FORMAT}).
-   * 
+   *
    * @param date
    *          The Date to convert.
    * @return The result time.
@@ -47,7 +62,7 @@ public final class DateTimeConverterUtil {
 
   /**
    * Convert String ({@value #INPUT_DATE_FORMAT}) to Calendar.
-   * 
+   *
    * @param dateString
    *          The String date to convert.
    * @return The result Date.
@@ -63,7 +78,7 @@ public final class DateTimeConverterUtil {
 
   /**
    * Set the calendar hour, minute and second value.
-   * 
+   *
    * @param originalCalendar
    *          The original calendar.
    * @param hourOfDay
@@ -90,7 +105,7 @@ public final class DateTimeConverterUtil {
 
   /**
    * Format a String date to valid ISO-8601 format String date.
-   * 
+   *
    * @param dateString
    *          The date.
    * @return The formated String date.
@@ -103,21 +118,6 @@ public final class DateTimeConverterUtil {
     Date date = dateFormat.parse(dateString);
     return DateTimeConverterUtil.dateToString(date);
   }
-
-  /**
-   * The date format of the input parameters.
-   */
-  private static final String INPUT_DATE_FORMAT = "yyyy-MM-dd";
-
-  /**
-   * The date format of JIRA.
-   */
-  private static final String JIRA_OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.s";
-
-  /**
-   * The date format of the output.
-   */
-  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
   /**
    * Private constructor.
