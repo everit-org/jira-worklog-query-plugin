@@ -85,6 +85,7 @@ import com.atlassian.jira.rest.v2.issue.RESTException;
 import com.atlassian.jira.rest.v2.search.SearchResultsBean;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.Permissions;
+import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.usercompatibility.UserCompatibilityHelper;
 import com.atlassian.jira.util.collect.CollectionBuilder;
 import com.atlassian.jira.util.json.JSONArray;
@@ -106,8 +107,7 @@ public class WorklogQueryResource<V> {
     private Long timespent = 0L;
 
     public IssueBeanWithTimespent(final Long id, final String key, final URI selfUri,
-        final Long timespent)
-    {
+        final Long timespent) {
       super(id, key, selfUri);
       this.timespent = timespent;
     }
@@ -124,8 +124,7 @@ public class WorklogQueryResource<V> {
 
     public SearchResultsBeanWithTimespent(final Integer startAt, final Integer maxResults,
         final Integer total,
-        final List<IssueBeanWithTimespent> issues)
-    {
+        final List<IssueBeanWithTimespent> issues) {
       this.startAt = startAt;
       this.maxResults = maxResults;
       this.total = total;
@@ -156,22 +155,20 @@ public class WorklogQueryResource<V> {
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryResource.class);
 
-  private void addFields(final Issue issue, final IssueBean bean)
-  {
+  private void addFields(final Issue issue, final IssueBean bean) {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
     // add them
     // to the result
-    final User loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
+    final ApplicationUser loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getUser();
     final FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
+    // User user = UserCompatibilityHelper.getUserForKey(loggedInUser.getKey());
     final List<FieldLayoutItem> fieldLayoutItems = layout.getVisibleLayoutItems(
         loggedInUser, issue.getProjectObject(),
         CollectionBuilder.list(issue.getIssueTypeObject().getId()));
-    for (final FieldLayoutItem fieldLayoutItem : fieldLayoutItems)
-    {
+    for (final FieldLayoutItem fieldLayoutItem : fieldLayoutItems) {
       final OrderableField field = fieldLayoutItem.getOrderableField();
       final FieldJsonRepresentation fieldValue = getFieldValue(fieldLayoutItem, issue);
-      if ((fieldValue != null) && (fieldValue.getStandardData() != null))
-      {
+      if ((fieldValue != null) && (fieldValue.getStandardData() != null)) {
         bean.addField(field, fieldValue, false);
       }
     }
@@ -181,35 +178,27 @@ public class WorklogQueryResource<V> {
     // This is a bit crap because "getAvailableNavigableFields" doesn't take the issue into account.
     // All it means is the field is not hidden in at least one project the user has BROWSE
     // permission on.
-    try
-    {
+    try {
       final Set<NavigableField> fields = ComponentAccessor.getFieldManager()
           .getAvailableNavigableFields(loggedInUser);
-      for (NavigableField field : fields)
-      {
-        if (!bean.hasField(field.getId()))
-        {
-          if (!(field instanceof OrderableField) || (field instanceof ProjectSystemField))
-          {
-            if (field instanceof RestAwareField)
-            {
+      for (NavigableField field : fields) {
+        if (!bean.hasField(field.getId())) {
+          if (!(field instanceof OrderableField) || (field instanceof ProjectSystemField)) {
+            if (field instanceof RestAwareField) {
               addRestAwareField(issue, bean, field, (RestAwareField) field);
             }
           }
         }
       }
-    } catch (FieldException e)
-    {
+    } catch (FieldException e) {
       // ignored...display as much as we can.
     }
   }
 
   private void addRestAwareField(final Issue issue, final IssueBean bean, final Field field,
-      final RestAwareField restAware)
-  {
+      final RestAwareField restAware) {
     FieldJsonRepresentation fieldJsonFromIssue = restAware.getJsonFromIssue(issue, false, null);
-    if ((fieldJsonFromIssue != null) && (fieldJsonFromIssue.getStandardData() != null))
-    {
+    if ((fieldJsonFromIssue != null) && (fieldJsonFromIssue.getStandardData() != null)) {
       bean.addField(field, fieldJsonFromIssue, false);
     }
   }
@@ -263,8 +252,8 @@ public class WorklogQueryResource<V> {
   private Response checkRequiredFindWorklogsParameter(final String startDate, final String user,
       final String group) {
     if (isStringEmpty(startDate)) {
-      return Response.status(Response.Status.BAD_REQUEST).
-          entity("The 'startDate' parameter is missing!").build();
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity("The 'startDate' parameter is missing!").build();
     }
     if ((isStringEmpty(user)) && (isStringEmpty(group))) {
       return Response.status(Response.Status.BAD_REQUEST)
@@ -327,10 +316,10 @@ public class WorklogQueryResource<V> {
    * @throws GenericEntityException
    *           If the GenericDelegator throw a GenericEntityException.
    */
-  private List<Long> createProjects(final String projectString, final User user) {
+  private List<Long> createProjects(final String projectString, final ApplicationUser user) {
 
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
-        .getProjectObjects(Permissions.BROWSE, user);
+        .getProjects(Permissions.BROWSE, user);
 
     List<Long> projectList = new ArrayList<Long>();
     for (Project project : projects) {
@@ -358,18 +347,25 @@ public class WorklogQueryResource<V> {
   private List<String> createUsers(final String userName, final String group) {
     List<String> users = new ArrayList<String>();
     if ((group != null) && (group.length() != 0)) {
-      Set<User> groupUsers = ComponentAccessor.getUserUtil().getAllUsersInGroupNames(
-          Arrays.asList(new String[] { group }));
+      Set<?> groupUsers = ComponentAccessor.getUserUtil()
+          .getAllUsersInGroupNames(
+              Arrays.asList(new String[] { group }));
       Set<String> assigneeIds = new TreeSet<String>();
-      for (User groupUser : groupUsers) {
-        assigneeIds.add(groupUser.getName());
-        String userKey = UserCompatibilityHelper.getKeyForUser(groupUser);
-        users.add(userKey);
+      for (Object groupUser : groupUsers) {
+        if (groupUser instanceof ApplicationUser) {
+          ApplicationUser applicationGroupUser = (ApplicationUser) groupUser;
+          assigneeIds.add(applicationGroupUser.getName());
+          users.add(applicationGroupUser.getKey());
+        } else {
+          User embenddedUser = (User) groupUser;
+          String userKey = UserCompatibilityHelper.getKeyForUser(embenddedUser);
+          users.add(userKey);
+        }
       }
     } else if ((userName != null) && (userName.length() != 0)) {
-      User user = ComponentAccessor.getUserUtil().getUserObject(userName);
+      ApplicationUser user = ComponentAccessor.getUserUtil().getUserByName(userName);
       if (user != null) {
-        String userKey = UserCompatibilityHelper.getKeyForUser(user);
+        String userKey = user.getKey();
         users.add(userKey);
       }
     }
@@ -404,7 +400,7 @@ public class WorklogQueryResource<V> {
     jsonWorklog.put("issueKey", issueKey);
 
     String userKey = rs.getString("author");
-    User user = UserCompatibilityHelper.getUserForKey(userKey);
+    ApplicationUser user = ComponentAccessor.getUserUtil().getUserByKey(userKey);
     String userName = user.getName();
     jsonWorklog.put("userId", userName);
 
@@ -557,8 +553,7 @@ public class WorklogQueryResource<V> {
       @DefaultValue("0") @QueryParam("startAt") int startAt,
       @DefaultValue("25") @QueryParam("maxResults") int maxResults,
       @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-      throws
-      URISyntaxException, SQLException {
+          throws URISyntaxException, SQLException {
 
     checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
 
@@ -642,8 +637,7 @@ public class WorklogQueryResource<V> {
     if (field instanceof RestAwareField) {
       RestAwareField restAware = (RestAwareField) field;
       return restAware.getJsonFromIssue(issue, false, fieldLayoutItem);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -663,8 +657,8 @@ public class WorklogQueryResource<V> {
       JqlParseException {
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    User loggedInUser = authenticationContext.getLoggedInUser();
-
+    ApplicationUser loggedInUser = authenticationContext.getUser();
+    // User user = UserCompatibilityHelper.getUserForKey(loggedInUser.getKey());
     List<Issue> issues = null;
     SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
     final ParseResult parseResult = searchService.parseQuery(loggedInUser, jql);
@@ -672,8 +666,7 @@ public class WorklogQueryResource<V> {
       final SearchResults results = searchService.search(loggedInUser,
           parseResult.getQuery(), PagerFilter.getUnlimitedFilter());
       issues = results.getIssues();
-    }
-    else {
+    } else {
       throw new JqlParseException(null, parseResult.getErrors().toString());
     }
     return issues;
@@ -747,8 +740,7 @@ public class WorklogQueryResource<V> {
 
       rs = ps.executeQuery();
 
-      while (rs.next())
-      {
+      while (rs.next()) {
         Long worklogIssueId = rs.getLong("issueid");
         if (issueIds.contains(worklogIssueId)) {
           result.put(worklogIssueId, rs.getLong("timeworked"));
@@ -809,21 +801,22 @@ public class WorklogQueryResource<V> {
       final String userString,
       final String groupString, final String projectString, final List<StringList> fields,
       final boolean updated)
-      throws DataAccessException,
-      SQLException, JSONException, ParseException {
+          throws DataAccessException,
+          SQLException, JSONException, ParseException {
 
     List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    User loggedInUser = authenticationContext.getLoggedInUser();
+    ApplicationUser loggedInUser = authenticationContext.getUser();
     List<Long> projects = createProjects(projectString, loggedInUser);
     if ((projectString != null) && projects.isEmpty()) {
       return Response
           .status(Response.Status.BAD_REQUEST)
           .entity(
               "Error running search: There is no project matching the given 'project' parameter: "
-                  + projectString).build();
+                  + projectString)
+          .build();
     }
     List<String> users = createUsers(userString, groupString);
     if (users.isEmpty()) {
@@ -859,14 +852,15 @@ public class WorklogQueryResource<V> {
         usersPreparedParams.deleteCharAt(usersPreparedParams.length() - 1);
       }
 
-      String query = "SELECT worklog.id, worklog.startdate, worklog.issueid, worklog.author, worklog.timeworked, worklog.worklogbody, worklog.updated"
-          + " FROM " + worklogTablename + ", " + issueTablename
-          + " WHERE worklog.issueid=jiraissue.id"
-          + " AND worklog.startdate>=? AND worklog.startdate<?"
-          + " AND worklog.author IN ("
-          + usersPreparedParams.toString() + ")"
-          + " AND jiraissue.project IN ("
-          + projectsPreparedParams.toString() + ")";
+      String query =
+          "SELECT worklog.id, worklog.startdate, worklog.issueid, worklog.author, worklog.timeworked, worklog.worklogbody, worklog.updated"
+              + " FROM " + worklogTablename + ", " + issueTablename
+              + " WHERE worklog.issueid=jiraissue.id"
+              + " AND worklog.startdate>=? AND worklog.startdate<?"
+              + " AND worklog.author IN ("
+              + usersPreparedParams.toString() + ")"
+              + " AND jiraissue.project IN ("
+              + projectsPreparedParams.toString() + ")";
 
       Connection conn = null;
       PreparedStatement ps = null;
@@ -885,8 +879,7 @@ public class WorklogQueryResource<V> {
         }
 
         rs = ps.executeQuery();
-        while (rs.next())
-        {
+        while (rs.next()) {
           worklogs.add(createWorklogJSONObject(rs, fields));
         }
       } finally {
