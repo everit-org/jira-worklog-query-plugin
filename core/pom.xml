@@ -28,7 +28,7 @@
 
   <parent>
     <groupId>org.everit.jira.worklog.query.plugin</groupId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <artifactId>org.everit.jira.worklog.query.plugin.parent</artifactId>
   </parent>
 
@@ -46,14 +46,17 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Import-Package>
-              com.atlassian.jira.rest.v2.*;version="${jira.version}",
-              com.atlassian.jira.rest.api.*;version="${jira.version}",
+              com.atlassian.jira.rest.v2.*;version="7.0.0",
+              com.atlassian.jira.rest.api.*;version="7.0.0",
               *
             </Import-Package>
             <Export-Package />
-            <Embed-Dependency>
+            <Embed-Dependency> 
               groupId=com.atlassian.usercompatibility;usercompatibility-jira,
             </Embed-Dependency>
+<!--              <Embed-Dependency> -->
+<!--               groupId=com.atlassian.jira;jira-rest-api, -->
+<!--             </Embed-Dependency> -->
           </instructions>
         </configuration>
       </plugin>
@@ -76,19 +79,19 @@
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-rest-plugin</artifactId>
-      <version>${jira.version}</version>
+      <version>7.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-api</artifactId>
-      <version>${jira.version}</version>
+      <version>7.0.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-core</artifactId>
-      <version>${jira.version}</version>
+      <version>7.0.0</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -101,12 +104,12 @@
         </exclusion>
       </exclusions>
     </dependency>
-<!--      <dependency> -->
-<!--       <groupId>com.atlassian.jira</groupId> -->
-<!--       <artifactId>jira-rest</artifactId> -->
-<!--       <version>${jira.version}</version> -->
-<!--       <scope>provided</scope> -->
-<!--     </dependency> -->
+     <dependency>
+      <groupId>com.atlassian.jira</groupId>
+      <artifactId>jira-rest-api</artifactId>
+      <version>7.0.0</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -136,6 +139,11 @@
       <artifactId>jsr311-api</artifactId>
       <version>1.0</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
     </dependency>
   </dependencies>
 
