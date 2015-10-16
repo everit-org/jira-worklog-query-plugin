@@ -41,7 +41,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <properties>
-     <jira.version>7.0.0-rc3</jira.version>
+     <jira.version>7.0.0</jira.version>
   </properties>
 
   <modules>

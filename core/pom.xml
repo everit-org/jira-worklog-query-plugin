@@ -46,17 +46,14 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Import-Package>
-              com.atlassian.jira.rest.v2.*;version="7.0.0",
-              com.atlassian.jira.rest.api.*;version="7.0.0",
+              com.atlassian.jira.rest.v2.*;version="${jira.version}",
+              com.atlassian.jira.rest.api.*;version="${jira.version}",
               *
             </Import-Package>
             <Export-Package />
             <Embed-Dependency> 
               groupId=com.atlassian.usercompatibility;usercompatibility-jira,
             </Embed-Dependency>
-<!--              <Embed-Dependency> -->
-<!--               groupId=com.atlassian.jira;jira-rest-api, -->
-<!--             </Embed-Dependency> -->
           </instructions>
         </configuration>
       </plugin>
@@ -64,34 +61,22 @@
   </build>
 
   <dependencies>
-<!--   <dependency> -->
-<!--       <groupId>com.atlassian.jira</groupId> -->
-<!--       <artifactId>atlassian-jira</artifactId> -->
-<!--       <version>${jira.version}</version> -->
-<!--       <scope>provided</scope> -->
-<!--       <exclusions> -->
-<!--         <exclusion> -->
-<!--           <groupId>jndi</groupId> -->
-<!--           <artifactId>jndi</artifactId> -->
-<!--         </exclusion> -->
-<!--       </exclusions> -->
-<!--     </dependency> -->
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-rest-plugin</artifactId>
-      <version>7.0.0</version>
+      <version>${jira.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-api</artifactId>
-      <version>7.0.0</version>
+      <version>${jira.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-core</artifactId>
-      <version>7.0.0</version>
+      <version>${jira.version}</version>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -107,31 +92,13 @@
      <dependency>
       <groupId>com.atlassian.jira</groupId>
       <artifactId>jira-rest-api</artifactId>
-      <version>7.0.0</version>
+      <version>${jira.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.5.8</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.atlassian.usercompatibility</groupId>
-      <artifactId>usercompatibility-jira</artifactId>
-      <version>0.18</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.atlassian.crowd</groupId>
-      <artifactId>embedded-crowd-api</artifactId>
-      <version>2.3.8</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.atlassian.ofbiz</groupId>
-      <artifactId>entityengine</artifactId>
-      <version>1.0.3</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

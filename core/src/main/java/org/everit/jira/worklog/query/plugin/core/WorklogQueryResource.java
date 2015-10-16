@@ -56,7 +56,6 @@ import org.ofbiz.core.entity.GenericEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.bc.issue.search.SearchService;
 import com.atlassian.jira.bc.issue.search.SearchService.ParseResult;
 import com.atlassian.jira.component.ComponentAccessor;
@@ -77,6 +76,7 @@ import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchResults;
 import com.atlassian.jira.jql.parser.JqlParseException;
 import com.atlassian.jira.ofbiz.DefaultOfBizConnectionFactory;
+import com.atlassian.jira.permission.ProjectPermissions;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.rest.api.util.StringList;
 import com.atlassian.jira.rest.v2.issue.IncludedFields;
@@ -84,9 +84,7 @@ import com.atlassian.jira.rest.v2.issue.IssueBean;
 import com.atlassian.jira.rest.v2.issue.RESTException;
 import com.atlassian.jira.rest.v2.search.SearchResultsBean;
 import com.atlassian.jira.security.JiraAuthenticationContext;
-import com.atlassian.jira.security.Permissions;
 import com.atlassian.jira.user.ApplicationUser;
-import com.atlassian.jira.usercompatibility.UserCompatibilityHelper;
 import com.atlassian.jira.util.collect.CollectionBuilder;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
@@ -159,12 +157,12 @@ public class WorklogQueryResource<V> {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
     // add them
     // to the result
-    final ApplicationUser loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getUser();
+    final ApplicationUser loggedInUser =
+        ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
     final FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
-    // User user = UserCompatibilityHelper.getUserForKey(loggedInUser.getKey());
-    final List<FieldLayoutItem> fieldLayoutItems = layout.getVisibleLayoutItems(
-        loggedInUser, issue.getProjectObject(),
-        CollectionBuilder.list(issue.getIssueTypeObject().getId()));
+    final List<FieldLayoutItem> fieldLayoutItems =
+        layout.getVisibleLayoutItems(issue.getProjectObject(),
+            CollectionBuilder.list(issue.getIssueType().getId()));
     for (final FieldLayoutItem fieldLayoutItem : fieldLayoutItems) {
       final OrderableField field = fieldLayoutItem.getOrderableField();
       final FieldJsonRepresentation fieldValue = getFieldValue(fieldLayoutItem, issue);
@@ -319,7 +317,7 @@ public class WorklogQueryResource<V> {
   private List<Long> createProjects(final String projectString, final ApplicationUser user) {
 
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
-        .getProjects(Permissions.BROWSE, user);
+        .getProjects(ProjectPermissions.BROWSE_PROJECTS, user);
 
     List<Long> projectList = new ArrayList<Long>();
     for (Project project : projects) {
@@ -347,29 +345,22 @@ public class WorklogQueryResource<V> {
   private List<String> createUsers(final String userName, final String group) {
     List<String> users = new ArrayList<String>();
     if ((group != null) && (group.length() != 0)) {
-      Set<?> groupUsers = ComponentAccessor.getUserUtil()
+      Set<ApplicationUser> groupUsers = ComponentAccessor.getUserUtil()
           .getAllUsersInGroupNames(
               Arrays.asList(new String[] { group }));
       Set<String> assigneeIds = new TreeSet<String>();
-      for (Object groupUser : groupUsers) {
-        if (groupUser instanceof ApplicationUser) {
-          ApplicationUser applicationGroupUser = (ApplicationUser) groupUser;
-          assigneeIds.add(applicationGroupUser.getName());
-          users.add(applicationGroupUser.getKey());
-        } else {
-          User embenddedUser = (User) groupUser;
-          String userKey = UserCompatibilityHelper.getKeyForUser(embenddedUser);
-          users.add(userKey);
-        }
+      for (ApplicationUser groupUser : groupUsers) {
+        assigneeIds.add(groupUser.getName());
+        users.add(groupUser.getKey());
       }
     } else if ((userName != null) && (userName.length() != 0)) {
-      ApplicationUser user = ComponentAccessor.getUserUtil().getUserByName(userName);
+      ApplicationUser user = ComponentAccessor.getUserManager().getUserByName(userName);
       if (user != null) {
-        String userKey = user.getKey();
-        users.add(userKey);
+        users.add(user.getKey());
       }
     }
     return users;
+
   }
 
   /**
@@ -400,7 +391,7 @@ public class WorklogQueryResource<V> {
     jsonWorklog.put("issueKey", issueKey);
 
     String userKey = rs.getString("author");
-    ApplicationUser user = ComponentAccessor.getUserUtil().getUserByKey(userKey);
+    ApplicationUser user = ComponentAccessor.getUserManager().getUserByKey(userKey);
     String userName = user.getName();
     jsonWorklog.put("userId", userName);
 
@@ -657,8 +648,7 @@ public class WorklogQueryResource<V> {
       JqlParseException {
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    ApplicationUser loggedInUser = authenticationContext.getUser();
-    // User user = UserCompatibilityHelper.getUserForKey(loggedInUser.getKey());
+    ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
     List<Issue> issues = null;
     SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
     final ParseResult parseResult = searchService.parseQuery(loggedInUser, jql);
@@ -808,7 +798,7 @@ public class WorklogQueryResource<V> {
 
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    ApplicationUser loggedInUser = authenticationContext.getUser();
+    ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
     List<Long> projects = createProjects(projectString, loggedInUser);
     if ((projectString != null) && projects.isEmpty()) {
       return Response
