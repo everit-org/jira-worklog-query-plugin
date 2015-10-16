@@ -5,3 +5,4 @@ Worklog Query Plugin is a JIRA plugin enabling its users to run worklog queries 
 
 The documentation of the plugin can be found [here](https://github.com/everit-org/jira-worklog-query-plugin/wiki).
 
+[![Analytics](https://ga-beacon.appspot.com/UA-15041869-4/everit-org/jira-worklog-query-plugin)](https://github.com/igrigorik/ga-beacon)
