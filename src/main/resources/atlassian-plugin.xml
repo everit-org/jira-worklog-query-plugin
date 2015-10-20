@@ -20,7 +20,7 @@
     MA 02110-1301  USA
 
 -->
-<atlassian-plugin key="org.everit.jira.worklog.query.plugin.core" name="Jira Worklog Query Plugin"
+<atlassian-plugin key="org.everit.jira.worklog.query.plugin" name="Jira Worklog Query Plugin"
   plugins-version="2">
 
   <plugin-info>

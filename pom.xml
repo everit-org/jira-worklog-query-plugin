@@ -26,29 +26,24 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
+   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
     <version>7.1.0</version>
     <relativePath></relativePath>
   </parent>
 
-  <groupId>org.everit.jira.worklog.query.plugin</groupId>
-  <artifactId>org.everit.jira.worklog.query.plugin.parent</artifactId>
+  <groupId>org.everit.jira</groupId>
+  <artifactId>org.everit.jira.worklog.query.plugin</artifactId>
   <version>2.0.0-SNAPSHOT</version>
 
-  <packaging>pom</packaging>
+  <packaging>bundle</packaging>
 
-  <inceptionYear>2013</inceptionYear>
+ <inceptionYear>2013</inceptionYear>
 
   <properties>
      <jira.version>7.0.0</jira.version>
   </properties>
-
-  <modules>
-    <module>core</module>
-    <module>itest</module>
-  </modules>
 
   <scm>
     <connection>scm:git:git://github.com/everit-org/jira-worklog-query-plugin.git</connection>
@@ -65,8 +60,103 @@
     <system>GitHub</system>
     <url>https://github.com/everit-org/jira-worklog-query-plugin/issues</url>
   </issueManagement>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Import-Package>
+              com.atlassian.jira.rest.v2.*;version="${jira.version}",
+              com.atlassian.jira.rest.api.*;version="${jira.version}",
+              *
+            </Import-Package>
+            <Export-Package />
+          </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <excludes>org/everit/jira/worklog/query/plugin/WorklogQueryResource*</excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-  <repositories>
+  <dependencies>
+    <dependency>
+      <groupId>com.atlassian.jira</groupId>
+      <artifactId>jira-rest-plugin</artifactId>
+      <version>${jira.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.jira</groupId>
+      <artifactId>jira-api</artifactId>
+      <version>${jira.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.jira</groupId>
+      <artifactId>jira-core</artifactId>
+      <version>${jira.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>jndi</groupId>
+          <artifactId>jndi</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+     <dependency>
+      <groupId>com.atlassian.jira</groupId>
+      <artifactId>jira-rest-api</artifactId>
+      <version>${jira.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.5.8</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>jsr311-api</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.5</version>
+    </dependency>
+    
+<!--     Test dependency -->
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>1.12</version>
+    </dependency>
+  </dependencies>
+  
+ <repositories>
     <repository>
       <id>3dparty</id>
       <url>https://maven.atlassian.com/3rdparty</url>
@@ -91,36 +181,4 @@
       </releases>
     </repository>
   </repositories>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <versionRange>[2.4,)</versionRange>
-                    <goals>
-                      <goal>unpack</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>

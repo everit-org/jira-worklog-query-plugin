@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jira.worklog.query.plugin.core;
+package org.everit.jira.worklog.query.plugin;
 
 import java.io.Serializable;
 import java.net.URI;
