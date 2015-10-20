@@ -51,10 +51,14 @@
               *
             </Import-Package>
             <Export-Package />
-            <Embed-Dependency> 
-              groupId=com.atlassian.usercompatibility;usercompatibility-jira,
-            </Embed-Dependency>
           </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <excludes>org/everit/jira/worklog/query/plugin/core/WorklogQueryResource*</excludes>
         </configuration>
       </plugin>
     </plugins>
