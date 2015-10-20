@@ -15,6 +15,7 @@
  */
 package org.everit.jira.worklog.query.plugin.core;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -87,16 +88,14 @@ import com.atlassian.jira.web.bean.PagerFilter;
  * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the
  * JIRA worklog query.
  *
- * @param <V>
- *          The Worklog Query Resource generic parameter.
  */
 @Path("/find")
-public class WorklogQueryResource<V> {
+public class WorklogQueryResource {
 
   /**
    * IssueBeanWithTimespent extends the original IssueBean class with spent time value.
    */
-  private class IssueBeanWithTimespent extends IssueBean {
+  private static class IssueBeanWithTimespent extends IssueBean {
     @XmlElement
     private Long timespent = 0L;
 
@@ -113,22 +112,45 @@ public class WorklogQueryResource<V> {
   }
 
   /**
+   * JSONWorklogObjectComperator implements a JSONObject comparator. The JSONObject contains
+   * worklogs, the comparison is based on the worklogs id.
+   */
+  private static class JSONWorklogObjectComperator implements Comparator<JSONObject>, Serializable {
+
+    /**
+     * Serial Version UID.
+     */
+    private static final long serialVersionUID = -4631842115879496L;
+
+    public int compare(final JSONObject o1, final JSONObject o2) {
+      long a = 0;
+      long b = 0;
+      try {
+        a = o1.getLong("id");
+        b = o2.getLong("id");
+      } catch (JSONException e) {
+        throw new RuntimeException(e);
+      }
+      return a > b ? +1 : a < b ? -1 : 0;
+    }
+  }
+
+  /**
    * SearchResultsBeanWithTimespent extends the original SearchResultsBean class with issues
    * timespent.
    */
   @XmlRootElement
   @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-  private class SearchResultsBeanWithTimespent extends SearchResultsBean {
+  private static class SearchResultsBeanWithTimespent extends SearchResultsBean {
 
     private List<IssueBeanWithTimespent> issues;
 
     SearchResultsBeanWithTimespent(final Integer startAt, final Integer maxResults,
-        final Integer total,
-        final List<IssueBeanWithTimespent> issues) {
+        final Integer total, final List<IssueBeanWithTimespent> issues) {
       this.startAt = startAt;
       this.maxResults = maxResults;
       this.total = total;
-      this.setIssues(issues);
+      setIssues(issues);
     }
 
     @SuppressWarnings("unused")
@@ -168,15 +190,15 @@ public class WorklogQueryResource<V> {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
     // add them
     // to the result
-    final ApplicationUser loggedInUser =
+    ApplicationUser loggedInUser =
         ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
-    final FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
-    final List<FieldLayoutItem> fieldLayoutItems =
+    FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
+    List<FieldLayoutItem> fieldLayoutItems =
         layout.getVisibleLayoutItems(issue.getProjectObject(),
             CollectionBuilder.list(issue.getIssueType().getId()));
-    for (final FieldLayoutItem fieldLayoutItem : fieldLayoutItems) {
-      final OrderableField<?> field = fieldLayoutItem.getOrderableField();
-      final FieldJsonRepresentation fieldValue = getFieldValue(fieldLayoutItem, issue);
+    for (FieldLayoutItem fieldLayoutItem : fieldLayoutItems) {
+      OrderableField<?> field = fieldLayoutItem.getOrderableField();
+      FieldJsonRepresentation fieldValue = getFieldValue(fieldLayoutItem, issue);
       if ((fieldValue != null) && (fieldValue.getStandardData() != null)) {
         bean.addField(field, fieldValue, false);
       }
@@ -188,7 +210,7 @@ public class WorklogQueryResource<V> {
     // All it means is the field is not hidden in at least one project the user has BROWSE
     // permission on.
     try {
-      final Set<NavigableField> fields = ComponentAccessor.getFieldManager()
+      Set<NavigableField> fields = ComponentAccessor.getFieldManager()
           .getAvailableNavigableFields(loggedInUser);
       for (NavigableField field : fields) {
         if (!bean.hasField(field.getId())
@@ -728,9 +750,9 @@ public class WorklogQueryResource<V> {
     ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
     List<Issue> issues = null;
     SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
-    final ParseResult parseResult = searchService.parseQuery(loggedInUser, jql);
+    ParseResult parseResult = searchService.parseQuery(loggedInUser, jql);
     if (parseResult.isValid()) {
-      final SearchResults results = searchService.search(loggedInUser,
+      SearchResults results = searchService.search(loggedInUser,
           parseResult.getQuery(), PagerFilter.getUnlimitedFilter());
       issues = results.getIssues();
     } else {
@@ -875,9 +897,8 @@ public class WorklogQueryResource<V> {
    * @return A Map which keys are issueIDs and values are the worked time on that issue.
    */
   private HashMap<Long, Long> sumWorklogs(final Calendar startDateCalendar,
-      final Calendar endDateCalendar,
-      final List<String> users,
-      final List<Long> issueIds) throws SQLException {
+      final Calendar endDateCalendar, final List<String> users, final List<Long> issueIds)
+          throws SQLException {
     String schemaName = new DefaultOfBizConnectionFactory().getDatasourceInfo().getSchemaName();
     String worklogTablename = "";
     if ((schemaName != null) && !"".equals(schemaName)) {
@@ -916,10 +937,9 @@ public class WorklogQueryResource<V> {
    *           If the createWorklogJSONObject method throw a JSONException.
    */
   private Response worklogQuery(final Calendar startDate, final Calendar endDate,
-      final String userString,
-      final String groupString, final String projectString, final List<StringList> fields)
-          throws DataAccessException,
-          SQLException, JSONException, ParseException {
+      final String userString, final String groupString, final String projectString,
+      final List<StringList> fields)
+          throws DataAccessException, SQLException, JSONException, ParseException {
 
     List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
@@ -957,19 +977,7 @@ public class WorklogQueryResource<V> {
       worklogs = getWorklogs(startDate, endDate, fields, projects, users, query);
     }
 
-    Collections.sort(worklogs, new Comparator<JSONObject>() {
-      public int compare(final JSONObject o1, final JSONObject o2) {
-        long a = 0;
-        long b = 0;
-        try {
-          a = o1.getLong("id");
-          b = o2.getLong("id");
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-        return a > b ? +1 : a < b ? -1 : 0;
-      }
-    });
+    Collections.sort(worklogs, new JSONWorklogObjectComperator());
     JSONArray jsonArrayResult = new JSONArray();
     jsonArrayResult.put(worklogs);
     return Response.ok(jsonArrayResult.toString()).build();

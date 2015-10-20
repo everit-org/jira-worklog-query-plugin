@@ -76,6 +76,12 @@
       <artifactId>jira-api</artifactId>
       <version>${jira.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
