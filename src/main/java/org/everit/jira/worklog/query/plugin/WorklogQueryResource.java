@@ -24,8 +24,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import com.atlassian.jira.rest.api.util.StringList;
+import com.atlassian.jira.rest.v2.issue.RESTException;
 
 /**
  * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the
@@ -157,7 +159,11 @@ public class WorklogQueryResource {
             .startAt(startAt)
             .maxResults(maxResults)
             .fields(fields);
-    return worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParameterDTO);
+    try {
+      return worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParameterDTO);
+    } catch (WorklogQueryException e) {
+      throw new RESTException(Status.BAD_REQUEST, e);
+    }
   }
 
 }
