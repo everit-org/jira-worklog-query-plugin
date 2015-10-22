@@ -1,35 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (c) 2013, Everit Kft.
+    This file is part of org.everit.jira.worklog.query.plugin.parent.
 
-    All rights reserved.
+    org.everit.jira.worklog.query.plugin.parent is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 3 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
+    org.everit.jira.worklog.query.plugin.parent is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-    MA 02110-1301  USA
+    You should have received a copy of the GNU Lesser General Public License
+    along with org.everit.jira.worklog.query.plugin.parent.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.everit</groupId>
-    <artifactId>oss</artifactId>
-    <version>4</version>
+    <groupId>org.everit.config</groupId>
+    <artifactId>org.everit.config.oss</artifactId>
+    <version>5.0.2</version>
+    <relativePath></relativePath>
   </parent>
 
   <groupId>org.everit.jira.worklog.query.plugin</groupId>
@@ -56,8 +54,8 @@
   </scm>
 
   <ciManagement>
-    <system>Jenkins</system>
-    <url>https://ci.everit.biz/jenkins/job/jira-worklog-query-plugin</url>
+    <system>Travis CI</system>
+    <url>https://travis-ci.org/everit-org/everit-org/jira-worklog-query-plugin</url>
   </ciManagement>
 
   <issueManagement>
