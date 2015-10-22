@@ -37,11 +37,7 @@ import com.atlassian.jira.rest.v2.issue.RESTException;
 @Path("/find")
 public class WorklogQueryResource {
 
-  private WorklogQueryCore worklogQueryResource;
-
-  public WorklogQueryResource() {
-    worklogQueryResource = new WorklogQueryCoreImpl();
-  }
+  private final WorklogQueryCore worklogQueryResource = new WorklogQueryCoreImpl();
 
   /**
    * The updatedWorklogs restful api method.
@@ -149,8 +145,8 @@ public class WorklogQueryResource {
       @DefaultValue("0") @QueryParam("startAt") final int startAt,
       @DefaultValue("25") @QueryParam("maxResults") final int maxResults,
       @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields) {
-    FindWorklogsByIssuesParameterDTO findWorklogsByIssuesParameterDTO =
-        new FindWorklogsByIssuesParameterDTO()
+    FindWorklogsByIssuesParam findWorklogsByIssuesParam =
+        new FindWorklogsByIssuesParam()
             .startDate(startDate)
             .endDate(endDate)
             .user(user)
@@ -160,7 +156,7 @@ public class WorklogQueryResource {
             .maxResults(maxResults)
             .fields(fields);
     try {
-      return worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParameterDTO);
+      return worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParam);
     } catch (WorklogQueryException e) {
       throw new RESTException(Status.BAD_REQUEST, e);
     }

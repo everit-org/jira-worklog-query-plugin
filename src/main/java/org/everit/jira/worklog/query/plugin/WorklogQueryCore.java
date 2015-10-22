@@ -33,6 +33,6 @@ public interface WorklogQueryCore {
       String project, List<StringList> fields) throws WorklogQueryException;
 
   SearchResultsBeanWithTimespent findWorklogsByIssues(
-      FindWorklogsByIssuesParameterDTO findWorklogsByIssuesParameterDTO)
+      FindWorklogsByIssuesParam findWorklogsByIssuesParam)
           throws WorklogQueryException;
 }

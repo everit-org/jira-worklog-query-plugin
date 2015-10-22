@@ -549,21 +549,21 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
    *
    * The findWorklogsByIssues REST method core implementation.
    *
-   * @param findWorklogsByIssuesParameterDTO
+   * @param findWorklogsByIssuesParam
    *          The parameters object of the findWorklogsByIssues method parameters.
    * @return The search result.
    */
   public SearchResultsBeanWithTimespent findWorklogsByIssues(
-      final FindWorklogsByIssuesParameterDTO findWorklogsByIssuesParameterDTO)
+      final FindWorklogsByIssuesParam findWorklogsByIssuesParam)
           throws WorklogQueryException {
-    int tmpStartAt = findWorklogsByIssuesParameterDTO.startAt;
-    int tmpMaxResults = findWorklogsByIssuesParameterDTO.maxResults;
-    checkRequiredFindWorklogsByIssuesParameter(findWorklogsByIssuesParameterDTO.startDate,
-        findWorklogsByIssuesParameterDTO.endDate, findWorklogsByIssuesParameterDTO.user,
-        findWorklogsByIssuesParameterDTO.group);
+    int tmpStartAt = findWorklogsByIssuesParam.startAt;
+    int tmpMaxResults = findWorklogsByIssuesParam.maxResults;
+    checkRequiredFindWorklogsByIssuesParameter(findWorklogsByIssuesParam.startDate,
+        findWorklogsByIssuesParam.endDate, findWorklogsByIssuesParam.user,
+        findWorklogsByIssuesParam.group);
 
-    Calendar startDateCalendar = convertStartDate(findWorklogsByIssuesParameterDTO.startDate);
-    Calendar endDateCalendar = convertEndDate(findWorklogsByIssuesParameterDTO.endDate);
+    Calendar startDateCalendar = convertStartDate(findWorklogsByIssuesParam.startDate);
+    Calendar endDateCalendar = convertEndDate(findWorklogsByIssuesParam.endDate);
     if (tmpStartAt < 0) {
       tmpStartAt = DEFAULT_STARTAT_PARAM;
     }
@@ -571,14 +571,14 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
       tmpMaxResults = DEFAULT_MAXRESULT_PARAM;
     }
     List<String> users =
-        createUsers(findWorklogsByIssuesParameterDTO.user, findWorklogsByIssuesParameterDTO.group);
+        createUsers(findWorklogsByIssuesParam.user, findWorklogsByIssuesParam.group);
     if (users.isEmpty()) {
       throw new WorklogQueryException(
           "Error running search: There is no group or user matching the given parameters.");
     }
     List<Issue> issues = null;
     try {
-      issues = getIssuesByJQL(findWorklogsByIssuesParameterDTO.jql);
+      issues = getIssuesByJQL(findWorklogsByIssuesParam.jql);
     } catch (SearchException e) {
       throw new WorklogQueryException("Error running search: ", e);
     } catch (JqlParseException e) {
@@ -598,7 +598,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     List<IssueBeanWithTimespent> issueBeans = null;
     try {
       issueBeans = colllectIssueBeans(tmpStartAt, tmpMaxResults, issues,
-          result, findWorklogsByIssuesParameterDTO.fields);
+          result, findWorklogsByIssuesParam.fields);
     } catch (URISyntaxException e) {
       throw new WorklogQueryException("Error when try collectig issue beans.", e);
     }

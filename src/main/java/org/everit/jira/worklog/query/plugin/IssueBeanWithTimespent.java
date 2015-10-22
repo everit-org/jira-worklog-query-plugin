@@ -34,7 +34,6 @@ public class IssueBeanWithTimespent extends IssueBean {
     this.timespent = timespent;
   }
 
-  @SuppressWarnings("unused")
   public Long getTimeSpent() {
     return timespent;
   }

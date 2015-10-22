@@ -23,7 +23,7 @@ import com.atlassian.jira.rest.api.util.StringList;
 /**
  * FindWorklogsByIssues method parameter container class.
  */
-public class FindWorklogsByIssuesParameterDTO implements Serializable {
+public class FindWorklogsByIssuesParam implements Serializable {
 
   /**
    * Serial Version UID.
@@ -62,27 +62,27 @@ public class FindWorklogsByIssuesParameterDTO implements Serializable {
    */
   public List<StringList> fields;
 
-  public FindWorklogsByIssuesParameterDTO endDate(final String endDate) {
+  public FindWorklogsByIssuesParam endDate(final String endDate) {
     this.endDate = endDate;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO fields(final List<StringList> fields) {
+  public FindWorklogsByIssuesParam fields(final List<StringList> fields) {
     this.fields = fields;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO group(final String group) {
+  public FindWorklogsByIssuesParam group(final String group) {
     this.group = group;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO jql(final String jql) {
+  public FindWorklogsByIssuesParam jql(final String jql) {
     this.jql = jql;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO maxResults(final int maxResults) {
+  public FindWorklogsByIssuesParam maxResults(final int maxResults) {
     this.maxResults = maxResults;
     return this;
   }
@@ -93,17 +93,17 @@ public class FindWorklogsByIssuesParameterDTO implements Serializable {
     throw new java.io.NotSerializableException(getClass().getName());
   }
 
-  public FindWorklogsByIssuesParameterDTO startAt(final int startAt) {
+  public FindWorklogsByIssuesParam startAt(final int startAt) {
     this.startAt = startAt;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO startDate(final String startDate) {
+  public FindWorklogsByIssuesParam startDate(final String startDate) {
     this.startDate = startDate;
     return this;
   }
 
-  public FindWorklogsByIssuesParameterDTO user(final String user) {
+  public FindWorklogsByIssuesParam user(final String user) {
     this.user = user;
     return this;
   }
