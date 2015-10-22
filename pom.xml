@@ -56,8 +56,8 @@
   </scm>
 
   <ciManagement>
-    <system>Jenkins</system>
-    <url>https://ci.everit.biz/jenkins/job/jira-worklog-query-plugin</url>
+    <system>Travis CI</system>
+    <url>https://travis-ci.org/everit-org/everit-org/jira-worklog-query-plugin</url>
   </ciManagement>
 
   <issueManagement>
