@@ -87,6 +87,12 @@
       <artifactId>entityengine</artifactId>
       <version>1.0.3</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.atlassian.jira</groupId>
@@ -94,6 +100,10 @@
       <version>${jira.version}</version>
       <scope>provided</scope>
       <exclusions>
+        <exclusion>
+          <artifactId>jta</artifactId>
+          <groupId>jta</groupId>
+        </exclusion>
         <exclusion>
           <groupId>jndi</groupId>
           <artifactId>jndi</artifactId>
