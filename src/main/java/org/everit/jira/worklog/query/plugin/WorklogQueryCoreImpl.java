@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jira.worklog.query.plugin.core;
+package org.everit.jira.worklog.query.plugin;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -35,17 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +44,6 @@ import com.atlassian.jira.bc.issue.search.SearchService;
 import com.atlassian.jira.bc.issue.search.SearchService.ParseResult;
 import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.config.properties.APKeys;
-import com.atlassian.jira.exception.DataAccessException;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.fields.Field;
@@ -75,7 +65,6 @@ import com.atlassian.jira.rest.api.util.StringList;
 import com.atlassian.jira.rest.v2.issue.IncludedFields;
 import com.atlassian.jira.rest.v2.issue.IssueBean;
 import com.atlassian.jira.rest.v2.issue.RESTException;
-import com.atlassian.jira.rest.v2.search.SearchResultsBean;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.util.collect.CollectionBuilder;
@@ -85,31 +74,9 @@ import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.bean.PagerFilter;
 
 /**
- * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the
- * JIRA worklog query.
- *
+ * The implementations of the WorklogQueryCore.
  */
-@Path("/find")
-public class WorklogQueryResource {
-
-  /**
-   * IssueBeanWithTimespent extends the original IssueBean class with spent time value.
-   */
-  private static class IssueBeanWithTimespent extends IssueBean {
-    @XmlElement
-    private Long timespent = 0L;
-
-    IssueBeanWithTimespent(final Long id, final String key, final URI selfUri,
-        final Long timespent) {
-      super(id, key, selfUri);
-      this.timespent = timespent;
-    }
-
-    @SuppressWarnings("unused")
-    public Long getTimeSpent() {
-      return timespent;
-    }
-  }
+public class WorklogQueryCoreImpl implements WorklogQueryCore {
 
   /**
    * JSONWorklogObjectComperator implements a JSONObject comparator. The JSONObject contains
@@ -136,36 +103,9 @@ public class WorklogQueryResource {
   }
 
   /**
-   * SearchResultsBeanWithTimespent extends the original SearchResultsBean class with issues
-   * timespent.
+   * The logger used to log.
    */
-  @XmlRootElement
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-  private static class SearchResultsBeanWithTimespent extends SearchResultsBean {
-
-    private List<IssueBeanWithTimespent> issues;
-
-    SearchResultsBeanWithTimespent(final Integer startAt, final Integer maxResults,
-        final Integer total, final List<IssueBeanWithTimespent> issues) {
-      this.startAt = startAt;
-      this.maxResults = maxResults;
-      this.total = total;
-      setIssues(issues);
-    }
-
-    @SuppressWarnings("unused")
-    public List<IssueBeanWithTimespent> getIssues() {
-      return issues;
-    }
-
-    public void setIssues(final List<IssueBeanWithTimespent> issues) {
-      this.issues = issues;
-    }
-  }
-
-  private static final int DEFAULT_MAXRESULT_PARAM = 25;
-
-  private static final int DEFAULT_STARTAT_PARAM = 0;
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryCoreImpl.class);
 
   /**
    * The last hour of a day.
@@ -181,10 +121,10 @@ public class WorklogQueryResource {
    * The last second of a minute.
    */
   private static final int LAST_SECOND_OF_MINUTE = 59;
-  /**
-   * The logger used to log.
-   */
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryResource.class);
+
+  private static final int DEFAULT_MAXRESULT_PARAM = 25;
+
+  private static final int DEFAULT_STARTAT_PARAM = 0;
 
   private void addFields(final Issue issue, final IssueBean bean) {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
@@ -297,10 +237,25 @@ public class WorklogQueryResource {
     return null;
   }
 
+  private List<Long> collectIssueIds(final List<Issue> issues) {
+    List<Long> issueIds = new ArrayList<Long>();
+    for (Issue issue : issues) {
+      issueIds.add(issue.getId());
+    }
+    return issueIds;
+  }
+
   private List<IssueBeanWithTimespent> colllectIssueBeans(final int tmpStartAt,
       final int tmpMaxResults, final List<Issue> issues,
-      final Map<Long, Long> result, final IncludedFields includedFields, final String baseUrl,
-      final boolean isEmptyField) throws URISyntaxException {
+      final Map<Long, Long> result, final List<StringList> fields) throws URISyntaxException {
+
+    IncludedFields includedFields =
+        IncludedFields.includeNavigableByDefault(fields);
+    String baseUrl = ComponentAccessor.getApplicationProperties().getString(APKeys.JIRA_BASEURL)
+        + "/rest/api/2/issue/";
+    boolean isEmptyField = StringList.joinLists(fields).asList()
+        .contains("emptyFieldValue");
+
     List<IssueBeanWithTimespent> issueBeans = new ArrayList<IssueBeanWithTimespent>();
     for (int i = 0, j = 0; ((j < issues.size()) && (i < (tmpStartAt + tmpMaxResults)));) {
       Issue issue = issues.get(j);
@@ -330,12 +285,18 @@ public class WorklogQueryResource {
    * @throws ParseException
    *           If cannot parse the String to Calendar.
    */
-  private Calendar convertEndDate(final String endDateString) throws ParseException {
+  private Calendar convertEndDate(final String endDateString) throws WorklogQueryException {
     Calendar endDate;
     if ((endDateString == null) || (endDateString.length() == 0)) {
       endDate = Calendar.getInstance();
     } else {
-      endDate = DateTimeConverterUtil.inputStringToCalendar(endDateString);
+      try {
+        endDate = DateTimeConverterUtil.inputStringToCalendar(endDateString);
+      } catch (ParseException e) {
+        LOGGER.debug("Failed to convert end date", e);
+        throw new WorklogQueryException("Cannot parse the 'endDate' parameter: " + endDateString,
+            e);
+      }
     }
     endDate = DateTimeConverterUtil.setCalendarHourMinSec(endDate,
         LAST_HOUR_OF_DAY, LAST_MINUTE_OF_HOUR, LAST_SECOND_OF_MINUTE);
@@ -351,8 +312,15 @@ public class WorklogQueryResource {
    * @throws ParseException
    *           Id cannot parse the String to Calendar.
    */
-  private Calendar convertStartDate(final String startDateString) throws ParseException {
-    Calendar startDate = DateTimeConverterUtil.inputStringToCalendar(startDateString);
+  private Calendar convertStartDate(final String startDateString) throws WorklogQueryException {
+    Calendar startDate;
+    try {
+      startDate = DateTimeConverterUtil.inputStringToCalendar(startDateString);
+    } catch (ParseException e) {
+      LOGGER.debug("Failed to convert start date", e);
+      throw new WorklogQueryException("Cannot parse the 'startDate' parameter: " + startDateString,
+          e);
+    }
     startDate = DateTimeConverterUtil.setCalendarHourMinSec(startDate, 0, 0, 0);
     return startDate;
   }
@@ -450,7 +418,6 @@ public class WorklogQueryResource {
       }
     }
     return users;
-
   }
 
   /**
@@ -504,55 +471,33 @@ public class WorklogQueryResource {
   }
 
   /**
-   * The updatedWorklogs restful api method.
+   * The findUpdatedWorklogs REST method core implementation.
    *
    * @param startDate
-   *          The query startDate parameter.
+   *          The start Date parameter of the REST.
    * @param endDate
-   *          The query endDate parameter, optional. Default value is the current time.
+   *          The end Date parameter of the REST.
    * @param user
-   *          The query user parameter, optional. This or the group parameter is required.
+   *          The user parameter of the REST.
    * @param group
-   *          The query group parameter, optional. This or the user parameter is required.
+   *          The group parameter of the REST.
    * @param project
-   *          The query project parameter, optional. Default is all project.
-   * @return {@link Response} what contains the result of the query. If the method parameters was
-   *         wrong then a message what contains the description of the bad request. In case of any
-   *         exception return {@link Response} with INTERNAL_SERVER_ERROR status what contains the
-   *         original exception message.
+   *          The project parameter of the REST.
+   * @param fields
+   *          The fields parameter of the REST.
+   * @return The founded worklogs.
+   *
    */
-  @GET
-  @Produces("*/*")
-  @Path("/updatedWorklogs")
-  public Response findUpdatedWorklogs(
-      @QueryParam("startDate") final String startDate,
-      @QueryParam("endDate") final String endDate,
-      @QueryParam("user") final String user,
-      @QueryParam("group") final String group,
-      @QueryParam("project") final String project,
-      @QueryParam("fields") final List<StringList> fields) {
-
+  public Response findUpdatedWorklogs(final String startDate, final String endDate,
+      final String user, final String group,
+      final String project, final List<StringList> fields) throws WorklogQueryException {
     Response checkRequiredFindWorklogsParamResponse = checkRequiredFindWorklogsParameter(startDate,
         user, group);
     if (checkRequiredFindWorklogsParamResponse != null) {
       return checkRequiredFindWorklogsParamResponse;
     }
-    Calendar startDateCalendar;
-    try {
-      startDateCalendar = convertStartDate(startDate);
-    } catch (ParseException e) {
-      LOGGER.debug("Failed to convert start date", e);
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Cannot parse the 'startDate' parameter: " + startDate).build();
-    }
-    Calendar endDateCalendar;
-    try {
-      endDateCalendar = convertEndDate(endDate);
-    } catch (ParseException e) {
-      LOGGER.debug("Failed to convert end date", e);
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Cannot parse the 'endDate' parameter: " + endDate).build();
-    }
+    Calendar startDateCalendar = convertStartDate(startDate);
+    Calendar endDateCalendar = convertEndDate(endDate);
     try {
       return Response.ok(
           worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields))
@@ -565,55 +510,32 @@ public class WorklogQueryResource {
   }
 
   /**
-   * The worklogs restful api method.
+   * The findWorklogs REST method core implementation.
    *
    * @param startDate
-   *          The query startDate parameter.
+   *          The start Date parameter of the REST.
    * @param endDate
-   *          The query endDate parameter, optional. Default value is the current time.
+   *          The end Date parameter of the REST.
    * @param user
-   *          The query user parameter, optional. This or the group parameter is required.
+   *          The user parameter of the REST.
    * @param group
-   *          The query group parameter, optional. This or the user parameter is required.
+   *          The group parameter of the REST.
    * @param project
-   *          The query project parameter, optional. Default is all project.
-   * @return {@link Response} what contains the result of the query. If the method parameters was
-   *         wrong then a message what contains the description of the bad request. In case of any
-   *         exception return {@link Response} with INTERNAL_SERVER_ERROR status what contains the
-   *         original exception message.
+   *          The project parameter of the REST.
+   * @param fields
+   *          The fields parameter of the REST.
+   * @return The founded worklogs.
    */
-  @GET
-  @Produces({ MediaType.APPLICATION_JSON })
-  @Path("/worklogs")
-  public Response findWorklogs(
-      @QueryParam("startDate") final String startDate,
-      @QueryParam("endDate") final String endDate,
-      @QueryParam("user") final String user,
-      @QueryParam("group") final String group,
-      @QueryParam("project") final String project,
-      @QueryParam("fields") final List<StringList> fields) {
-
+  public Response findWorklogs(final String startDate, final String endDate, final String user,
+      final String group, final String project, final List<StringList> fields)
+          throws WorklogQueryException {
     Response checkRequiredFindWorklogsParamResponse = checkRequiredFindWorklogsParameter(startDate,
         user, group);
     if (checkRequiredFindWorklogsParamResponse != null) {
       return checkRequiredFindWorklogsParamResponse;
     }
-    Calendar startDateCalendar;
-    try {
-      startDateCalendar = convertStartDate(startDate);
-    } catch (ParseException e) {
-      LOGGER.debug("Failed to convert start date", e);
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Cannot parse the 'startDate' parameter: " + startDate).build();
-    }
-    Calendar endDateCalendar;
-    try {
-      endDateCalendar = convertEndDate(endDate);
-    } catch (ParseException e) {
-      LOGGER.debug("Failed to convert end date", e);
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity("Cannot parse the 'endDate' parameter: " + endDate).build();
-    }
+    Calendar startDateCalendar = convertStartDate(startDate);
+    Calendar endDateCalendar = convertEndDate(endDate);
     try {
       return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields);
     } catch (Exception e) {
@@ -624,95 +546,62 @@ public class WorklogQueryResource {
   }
 
   /**
-   * FindWorklogsByIssues REST method.
    *
-   * @param startDate
-   *          The query start date.
-   * @param endDate
-   *          The query end date.
-   * @param user
-   *          The searched user. Optional.
-   * @param group
-   *          The searched group. Optional.
-   * @param jql
-   *          Plus jql. Default empty String.
-   * @param startAt
-   *          Start the query result list from this element. Default 0.
-   * @param maxResults
-   *          Max number of results. Default 25.
-   * @param fields
-   *          List of the queried fields.
-   * @return The found worklogs.
-   * @throws URISyntaxException
-   *           Throw when URI syntax is wrong.
-   * @throws SQLException
-   *           SQL exception from jira database.
+   * The findWorklogsByIssues REST method core implementation.
+   *
+   * @param findWorklogsByIssuesParam
+   *          The parameters object of the findWorklogsByIssues method parameters.
+   * @return The search result.
    */
-  @GET
-  @Path("/worklogsByIssues")
-  @Produces({ MediaType.APPLICATION_JSON })
   public SearchResultsBeanWithTimespent findWorklogsByIssues(
-      @QueryParam("startDate") final String startDate,
-      @QueryParam("endDate") final String endDate,
-      @QueryParam("user") final String user,
-      @QueryParam("group") final String group,
-      @DefaultValue("") @QueryParam("jql") final String jql,
-      @DefaultValue("0") @QueryParam("startAt") final int startAt,
-      @DefaultValue("25") @QueryParam("maxResults") final int maxResults,
-      @DefaultValue("emptyFieldValue") @QueryParam("fields") final List<StringList> fields)
-          throws URISyntaxException, SQLException {
-    int tmpStartAt = startAt;
-    int tmpMaxResults = maxResults;
-    checkRequiredFindWorklogsByIssuesParameter(startDate, endDate, user, group);
+      final FindWorklogsByIssuesParam findWorklogsByIssuesParam)
+          throws WorklogQueryException {
+    int tmpStartAt = findWorklogsByIssuesParam.startAt;
+    int tmpMaxResults = findWorklogsByIssuesParam.maxResults;
+    checkRequiredFindWorklogsByIssuesParameter(findWorklogsByIssuesParam.startDate,
+        findWorklogsByIssuesParam.endDate, findWorklogsByIssuesParam.user,
+        findWorklogsByIssuesParam.group);
 
-    Calendar startDateCalendar = null;
-    try {
-      startDateCalendar = convertStartDate(startDate);
-    } catch (ParseException e) {
-      throw new RESTException(Response.Status.BAD_REQUEST,
-          "Cannot parse the 'startDate' parameter: " + startDate);
-    }
-    Calendar endDateCalendar = null;
-    try {
-      endDateCalendar = convertEndDate(endDate);
-    } catch (ParseException e) {
-      throw new RESTException(Response.Status.BAD_REQUEST, "Cannot parse the 'endDate' parameter: "
-          + endDate);
-    }
+    Calendar startDateCalendar = convertStartDate(findWorklogsByIssuesParam.startDate);
+    Calendar endDateCalendar = convertEndDate(findWorklogsByIssuesParam.endDate);
     if (tmpStartAt < 0) {
       tmpStartAt = DEFAULT_STARTAT_PARAM;
     }
     if (tmpMaxResults < 0) {
       tmpMaxResults = DEFAULT_MAXRESULT_PARAM;
     }
-    List<String> users = createUsers(user, group);
+    List<String> users =
+        createUsers(findWorklogsByIssuesParam.user, findWorklogsByIssuesParam.group);
     if (users.isEmpty()) {
-      throw new RESTException(Response.Status.BAD_REQUEST,
+      throw new WorklogQueryException(
           "Error running search: There is no group or user matching the given parameters.");
     }
     List<Issue> issues = null;
     try {
-      issues = getIssuesByJQL(jql);
+      issues = getIssuesByJQL(findWorklogsByIssuesParam.jql);
     } catch (SearchException e) {
-      throw new RESTException(Response.Status.BAD_REQUEST, "Error running search: " + e);
+      throw new WorklogQueryException("Error running search: ", e);
     } catch (JqlParseException e) {
-      throw new RESTException(Response.Status.BAD_REQUEST, e.getMessage());
+      throw new WorklogQueryException(e.getMessage(), e);
     }
 
-    List<Long> issueIds = new ArrayList<Long>();
-    for (Issue issue : issues) {
-      issueIds.add(issue.getId());
-    }
+    List<Long> issueIds = collectIssueIds(issues);
     Collections.reverse(issues);
 
-    Map<Long, Long> result = sumWorklogs(startDateCalendar, endDateCalendar, users, issueIds);
+    Map<Long, Long> result = null;
+    try {
+      result = sumWorklogs(startDateCalendar, endDateCalendar, users, issueIds);
+    } catch (SQLException e) {
+      throw new WorklogQueryException("Error when try sums worklogs.", e);
+    }
 
-    IncludedFields includedFields = IncludedFields.includeNavigableByDefault(fields);
-    String baseUrl = ComponentAccessor.getApplicationProperties().getString(APKeys.JIRA_BASEURL)
-        + "/rest/api/2/issue/";
-    boolean isEmptyField = StringList.joinLists(fields).asList().contains("emptyFieldValue");
-    List<IssueBeanWithTimespent> issueBeans = colllectIssueBeans(tmpStartAt, tmpMaxResults, issues,
-        result, includedFields, baseUrl, isEmptyField);
+    List<IssueBeanWithTimespent> issueBeans = null;
+    try {
+      issueBeans = colllectIssueBeans(tmpStartAt, tmpMaxResults, issues,
+          result, findWorklogsByIssuesParam.fields);
+    } catch (URISyntaxException e) {
+      throw new WorklogQueryException("Error when try collectig issue beans.", e);
+    }
     SearchResultsBeanWithTimespent searchResultsBean =
         new SearchResultsBeanWithTimespent(tmpStartAt, tmpMaxResults, result.size(), issueBeans);
 
@@ -815,8 +704,7 @@ public class WorklogQueryResource {
 
   private List<JSONObject> getWorklogs(final Calendar startDate, final Calendar endDate,
       final List<StringList> fields, final List<Long> projects, final List<String> users,
-      final String query)
-          throws SQLException, JSONException, ParseException {
+      final String query) throws SQLException, JSONException, ParseException {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -931,6 +819,8 @@ public class WorklogQueryResource {
    *          True if the method give back the worklogs which were created or updated in the given
    *          period, else false. The false give back the worklogs of the period.
    * @return JSONString what contains a list of queried worklogs.
+   * @throws SQLException
+   *           SQl exception from Jira db conenction.
    * @throws ParseException
    *           If can't parse the dates.
    * @throws JSONException
@@ -938,8 +828,7 @@ public class WorklogQueryResource {
    */
   private Response worklogQuery(final Calendar startDate, final Calendar endDate,
       final String userString, final String groupString, final String projectString,
-      final List<StringList> fields)
-          throws DataAccessException, SQLException, JSONException, ParseException {
+      final List<StringList> fields) throws SQLException, JSONException, ParseException {
 
     List<JSONObject> worklogs = new ArrayList<JSONObject>();
 
@@ -987,4 +876,5 @@ public class WorklogQueryResource {
     // jsonResult.put("worklogs", worklogs);
     // return Response.ok(jsonResult.toString()).build();
   }
+
 }
