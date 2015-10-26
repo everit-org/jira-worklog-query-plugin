@@ -4,3 +4,6 @@
 .project
 .checkstyle
 target
+.fbExcludeFilterFile
+.pmd
+.pmdruleset.xml

@@ -26,7 +26,6 @@
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
     <version>7.1.0</version>
-    <relativePath></relativePath>
   </parent>
 
   <groupId>org.everit.jira</groupId>
@@ -177,4 +176,5 @@
       </releases>
     </repository>
   </repositories>
+
 </project>
