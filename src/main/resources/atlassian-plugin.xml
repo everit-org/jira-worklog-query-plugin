@@ -31,7 +31,7 @@
     <param name="atlassian-data-center-compatible">true</param>
   </plugin-info>
 
-  <rest key="JWQP" path="/jira-worklog-query" version="2.0.0-SNAPSHOT">
+  <rest key="JWQP" path="/jira-worklog-query" version="1">
     <description>Provides the REST resource for the Worklog Query plugin.</description>
   </rest>
 
