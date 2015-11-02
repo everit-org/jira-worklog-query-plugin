@@ -1,0 +1,198 @@
+<!DOCTYPE HTML>
+<!-- Copyright (c) 2011, Everit Kft.
+
+    All rights reserved.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 3 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNUc
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+    MA 02110-1301  USA -->
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Everit Worklog Query Plugin</title>
+<link rel="icon" type="image/ico" href="fonts/favicon.ico">
+
+<!--    <link rel="stylesheet" type="text/css" href="common/css/base.css">-->
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/docs.min.css" rel="stylesheet">
+<link href="css/everit.css" rel="stylesheet">
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-15041869-4']);
+  _gaq.push(['_setDomainName', 'everit.org']);
+  _gaq.push(['_trackPageview']);
+</script>
+</head>
+
+<body class="bs-docs-home" data-spy="scroll" data-target="#affix-nav">
+  <a class="sr-only" href="#content">Skip to main content</a>
+  <header class="navbar navbar-static-top bs-docs-nav" id="top" role="banner">
+    <div class="container">
+      <div class="navbar-header">
+        <button class="navbar-toggle" type="button" data-toggle="collapse"
+          data-target=".bs-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span
+            class="icon-bar"></span> <span class="icon-bar"></span>
+        </button>
+        <a href="#" class="navbar-brand">Index</a>
+      </div>
+      <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+        <ul class="nav navbar-nav">
+          <li><a href="https://github.com/everit-org/jira-worklog-query-plugin" target="_blank">Source</a>
+          </li>
+          <li><a href="http://www.everit.org/" target="_blank">Community</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="http://www.everit.biz" target="_blank">Enterprise</a></li>
+          <li><a href="http://everitorg.wordpress.com/" target="_blank">Blog</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div class="bs-docs-masthead everit-header" id="content" role="main">
+    <div class="container">
+      <span class="bs-docs-booticon bs-docs-booticon-lg bs-docs-booticon-outline"> <img
+        class="logo" src="fonts/sbz_e.svg" alt="E">
+      </span>
+      <p class="lead">Jira Worklog Query Plugin</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="text-center text-danger" style="padding-top: 1em;">
+      Do you need Jira and OSGi developers? <strong>Daily rates start from 150 €!</strong> For more
+      information, please <a href="http://www.everit.biz#contact">contact us</a>!
+    </div>
+    <div class="col-md-10">
+
+      <div class="bs-docs-featurette cookbook" id="intoduction">
+        <h3 style="text-align: center">Worklog Query Plugin is a JIRA plugin enabling its users
+          to run worklog queries and apply parameters on these queries through RESTful services. The
+          plugin handles queries according to user roles, therefore, these queries can only be run
+          on worklogs the user has appropriate permissions to access. Various filtering parameters
+          can also be set up to narrow down the search results to a certain interval of time, user,
+          user group and/or project. The result of the worklog query is served in JSON format.</h3>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="install">
+        <h2>Install</h2>
+        <p>
+          The plugin can be downloaded or installed from <a
+            href="https://marketplace.atlassian.com/plugins/org.everit.jira.worklog.query.plugin.core">Atlassian
+            Marketplace</a>.
+        </p>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="authentication">
+        <h2>Authentication</h2>
+        <p>To run queries, it is essential to be authenticated. The process of authentication
+          can be performed in different ways:</p>
+        <ul>
+          <li>Authentication provided by JIRA in a browser: queries can be run during the valid
+            status of authentication data stored in the browser.</li>
+          <li>The query can also be run in the header by the help of Http Basic Authentication.
+            More information: <a href="http://en.wikipedia.org/wiki/Basic_access_authentication">http://en.wikipedia.org/wiki/Basic_access_authentication</a>
+          </li>
+        </ul>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="rest_api_version">
+        <h2>REST API verison</h2>
+        <p>Using the plugin version 2.x, the REST-API-VERSION in the URL will be the major
+          version of the REST API, which is currently 1.</p>
+        <p>
+          Using the plugin version 1.x, the REST-API-VERSION in the URL will be the same as the
+          plugin version until version 1.2.1 (including). After version 1.2.1 the REST-API-VERSION
+          will remain 1.2.1. This decision was inspired by <a
+            href="https://github.com/everit-org/jira-worklog-query-plugin/issues/17">https://github.com/everit-org/jira-worklog-query-plugin/issues/17</a>
+          and we do not want to bother the users with MINOR and PATCH version changes in further 1.x
+          releases.
+        </p>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="queries">
+        <h2>Queries</h2>
+        <p>By means of the plugin, three types of queries can be run: we may query the worklogs,
+          or the modified worklogs during the spefied interval, or summarize worklogs worked time by
+          issues.</p>
+        <h3>Querying worklogs that belong to an interval</h3>
+        <p>The worklog query can be accessed from the link below:</p>
+        <p>
+          <b>http://myjira/rest/jira-worklog-query/<a
+            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/worklogs
+          </b>
+        </p>
+        <p>The query returns the worklogs that belong to the specified interval. The query
+          considers the startdate value of the worklog.</p>
+        <p>GET parameters of the worklogs query:</p>
+      </div>
+      <hr class="featurette-divider">
+
+    </div>
+
+    <!--        Affix-->
+    <div class="col-md-2 col-sm-0 col-xs-0">
+      <nav id="affix-nav">
+        <ul class="nav nav-pills nav-stacked everit-affix" data-spy="affix" data-offset-top="350"
+          data-offset-bottom="140">
+          <li><a href="#install">Install</a></li>
+          <li class="active"><a href="#authentication">Authentication</a></li>
+          <li><a href="#rest_api_version">REST API verison</a>
+          <li><a href="#queries">Queries</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <div></div>
+  <footer class="bs-docs-footer" role="contentinfo">
+    <div class="container">
+      <div class="bs-docs-social">
+        <ul class="bs-docs-social-buttons">
+          <li class="follow-btn "><a href="https://twitter.com/EveritOrg"
+            class="twitter-follow-button" data-show-count="true">Follow @EveritOrg</a></li>
+          <li class="tweet-btn"><a href="https://twitter.com/share"
+            class="twitter-share-button" data-url="http://www.everit.org/">Tweet</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript
+================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="js/jquery-2.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/everit.js "></script>
+  <script type="text/javascript">
+      (function() {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol
+            ? 'https://ssl'
+            : 'http://www')
+            + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+</body>
+
+</html>
