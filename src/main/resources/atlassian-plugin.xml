@@ -24,7 +24,7 @@
   plugins-version="2">
 
   <plugin-info>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>${project.version}</version>
     <description>Jira Worklog Query Plugin</description>
     <application-version min="7.0" />
     <vendor name="EverIT Kft." url="https://www.everit.biz" />
