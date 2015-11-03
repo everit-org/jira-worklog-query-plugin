@@ -24,7 +24,6 @@
 <title>Everit Worklog Query Plugin</title>
 <link rel="icon" type="image/ico" href="fonts/favicon.ico">
 
-<!--    <link rel="stylesheet" type="text/css" href="common/css/base.css">-->
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <link href="css/docs.min.css" rel="stylesheet">
 <link href="css/everit.css" rel="stylesheet">
@@ -131,7 +130,7 @@
         <p>By means of the plugin, three types of queries can be run: we may query the worklogs,
           or the modified worklogs during the spefied interval, or summarize worklogs worked time by
           issues.</p>
-        <h3>Querying worklogs that belong to an interval</h3>
+        <h3 id="query_belong">Querying worklogs that belong to an interval</h3>
         <p>The worklog query can be accessed from the link below:</p>
         <p>
           <b>http://myjira/rest/jira-worklog-query/<a
@@ -141,9 +140,563 @@
         <p>The query returns the worklogs that belong to the specified interval. The query
           considers the startdate value of the worklog.</p>
         <p>GET parameters of the worklogs query:</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>parameter</th>
+              <th>value</th>
+              <th>optional</th>
+              <th>description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>startDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>false</td>
+              <td>The start date from which the worklogs can be viewed. The query is run from
+                the beginning of the given day (00:00:00)</td>
+            </tr>
+            <tr>
+              <td>endDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>true</td>
+              <td>The end date until which the worklogs can be viewed. The query is run until
+                the end of the given day (23:59:59). The default value is the current date.</td>
+            </tr>
+            <tr>
+              <td>group/user</td>
+              <td>string</td>
+              <td>false</td>
+              <td>A JIRA group or user name whose worklogs are to be listed. One of them is
+                required.</td>
+            </tr>
+            <tr>
+              <td>project</td>
+              <td>string</td>
+              <td>true</td>
+              <td>The key parameter of a JIRA project. Unless it is defined, all projects are
+                queried, otherwise only the ones under the defined project.</td>
+            </tr>
+            <tr>
+              <td>fields</td>
+              <td>string list</td>
+              <td>true</td>
+              <td>A list of additional fields to return. Available fields are: comment,
+                updated.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Available response representations:</p>
+        <ul>
+          <li>200 - application/json Example:</li>
+        </ul>
+        <pre><code>[
+  [
+    {
+      "id": 10204,
+      "startDate": "2014-07-31T08:00:00+0200",
+      "issueKey": "TEST-5",
+      "userId": "admin",
+      "duration": 22440
+    },
+    {
+      "id": 10207,
+      "startDate": "2014-07-31T14:14:00+0200",
+      "issueKey": "TEST-2",
+      "userId": "admin",
+      "duration": 2340
+    }
+  ]
+]</code></pre>
+        <ul>
+          <li>400 - Returned if there is a problem running the query. Example:</li>
+        </ul>
+        <pre><code>Error running search: There is no project matching the given 'project' parameter: NOPROJECT</code></pre>
+        <h3 id="query_during">Querying worklogs modified during an interval</h3>
+        <p>The worklog query can be accessed from the link below:</p>
+        <p>
+          <b>http://myjira/rest/jira-worklog-query/<a
+            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/updatedWorklogs
+          </b>
+        </p>
+        <p>The query returns all the worklogs created and modified during the given interval.
+          According to the logic of Jira, creation counts as modification. In the latter case, the
+          value of the worklog update equals the value of createdate. The query considers the value
+          of the worklog update.</p>
+        <p>GET parameters of the updatedWorklogs query:</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>parameter</th>
+              <th>value</th>
+              <th>optional</th>
+              <th>description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>startDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>false</td>
+              <td>The start date from which the worklogs can be viewed. The query is run from
+                the beginning of the given day (00:00:00)</td>
+            </tr>
+            <tr>
+              <td>endDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>true</td>
+              <td>The end date until which the worklogs can be viewed. The query is run until
+                the end of the given day (23:59:59). The default value is the current date.</td>
+            </tr>
+            <tr>
+              <td>group/user</td>
+              <td>string</td>
+              <td>false</td>
+              <td>A JIRA group or user name whose worklogs are to be listed. One of them is
+                required.</td>
+            </tr>
+            <tr>
+              <td>project</td>
+              <td>string</td>
+              <td>true</td>
+              <td>The key parameter of a JIRA project. Unless it is defined, all projects are
+                queried, otherwise only the ones under the defined project.</td>
+            </tr>
+            <tr>
+              <td>fields</td>
+              <td>string list</td>
+              <td>true</td>
+              <td>A list of additional fields to return. Available fields are: comment,
+                updated.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Available response representations:</p>
+        <ul>
+          <li>200 - application/json Example:</li>
+        </ul>
+        <pre><code>[
+  [
+    {
+      "id": 10204,
+      "startDate": "2014-07-31T08:00:00+0200",
+      "issueKey": "TEST-5",
+      "userId": "admin",
+      "duration": 22440
+    },
+    {
+      "id": 10207,
+      "startDate": "2014-07-31T14:14:00+0200",
+      "issueKey": "TEST-2",
+      "userId": "admin",
+      "duration": 2340
+    }
+  ]
+]</code></pre>
+        <ul>
+          <li>400 - Returned if there is a problem running the query. Example:</li>
+        </ul>
+        <pre><code>Error running search: There is no project matching the given 'project' parameter: NOPROJECT</code></pre>
+        <h3 id="summarize">Summarize worked time by issues</h3>
+        <p>The worklog query can be accessed from the link below:</p>
+        <p>
+          <b>http://myjira/rest/jira-worklog-query/<a
+            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/worklogsByIssues
+          </b>
+        </p>
+        <p>This function queries worklogs - filtered by the given parameters - and summarize the
+          worked time by issues. The returned issues can be filtered by a JQL expression. The
+          response are paginated, with default page size of 25 issues.</p>
+        <p>GET parameters of the worklogs query:</p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>parameter</th>
+              <th>value</th>
+              <th>optional</th>
+              <th>description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>startDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>false</td>
+              <td>The result will only contain worklogs after this date</td>
+            </tr>
+            <tr>
+              <td>endDate</td>
+              <td>"YYYY-MM-DD"</td>
+              <td>false</td>
+              <td>The result will only contain worklogs before this date. The default value is
+                the current date.</td>
+            </tr>
+            <tr>
+              <td>group/user</td>
+              <td>string</td>
+              <td>false</td>
+              <td>A JIRA group or user name whose worklogs are queried. One of them is
+                required.</td>
+            </tr>
+            <tr>
+              <td>jql</td>
+              <td>string</td>
+              <td>true</td>
+              <td>The returned issues are filtered by this JQL expression. By default, all
+                issues are returned.</td>
+            </tr>
+            <tr>
+              <td>fields</td>
+              <td>string list</td>
+              <td>true</td>
+              <td>The list of fields to return for each issue. By default, no additional fields
+                are returned. <a href="https://docs.atlassian.com/jira/REST/latest/#d2e423">More
+                  info</a>
+              </td>
+            </tr>
+            <tr>
+              <td>startAt</td>
+              <td>int</td>
+              <td>true</td>
+              <td>The index of the first issue to return (0-based)</td>
+            </tr>
+            <tr>
+              <td>maxResults</td>
+              <td>int</td>
+              <td>true</td>
+              <td>The maximum number of issues to return (default is 25).</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Available response representations:</p>
+        <ul>
+          <li>200 - application/json Example response with no additional fields parameter:</li>
+        </ul>
+        <pre><code>{
+  "startAt": 0,
+  "maxResults": 25,
+  "total": 2,
+  "issues": [
+    {
+      "id": "13405",
+      "self": "http://localhost:8080/rest/api/2/issue/13405",
+      "key": "TEST-1",
+      "timespent": 1440
+    },
+    {
+      "id": "13406",
+      "self": "http://localhost:8080/rest/api/2/issue/13406",
+      "key": "TEST-2",
+      "timespent": 35760
+    }
+  ]
+}</code></pre>
+        <p>Example response with "fields=summary,progress" parameter:</p>
+        <pre><code>{
+  "startAt": 0,
+  "maxResults": 25,
+  "total": 1,
+  "issues": [
+    {
+      "id": "13411",
+      "self": "http://localhost:8080/rest/api/2/issue/13411",
+      "key": "NEW-1",
+      "fields": {
+        "progress": {
+          "progress": 84000,
+          "total": 84000,
+          "percent": 100
+        },
+        "summary": "new issue1"
+      },
+      "timespent": 67080
+    }
+  ]
+}</code></pre>
+        <ul>
+          <li>400 - application/json Returned if there is a problem running the query. Example:</li>
+        </ul>
+        <pre><code>{
+  "errorMessages": [
+    "Cannot parse the 'startDate' parameter: 2013-0ghjg6-25"
+  ],
+  "errors": {
+  }
+}</code></pre>
       </div>
       <hr class="featurette-divider">
 
+      <div class="bs-docs-featurette cookbook" id="response">
+        <h2>Response</h2>
+        <p>In the case of a successful query the worklog information is returned (with HTTP 200
+          OK status) in JSON format as:</p>
+        <p>[[ { "id":int, "duration":int, "startDate":string, "userId":string, "issueKey":string
+          },.. ]]</p>
+        <p>The items of the list consist of the following data:</p>
+        <ul>
+          <li>id - ID of the worklog.</li>
+          <li>duration - Duration of the worklog in seconds.</li>
+          <li>startDate - Start date of the worklog in ISO-8601 format.</li>
+          <li>userId - ID of the JIRA user who created the worklog.</li>
+          <li>issueKey - Key value of the issue to which the worklog belongs.</li>
+        </ul>
+        <p>200 - application/json Example:</p>
+        <pre><code>[
+  [
+    {
+      "id": 10204,
+      "startDate": "2014-07-31T08:00:00+0200",
+      "issueKey": "TEST-5",
+      "userId": "admin",
+      "duration": 22440
+    },
+    {
+      "id": 10207,
+      "startDate": "2014-07-31T14:14:00+0200",
+      "issueKey": "TEST-2",
+      "userId": "admin",
+      "duration": 2340
+    }
+  ]
+]</code></pre>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="error_handling">
+        <h2>Error handling</h2>
+        <p>If the parameters of the query are defined erroneously, the following responses can
+          be returned with an HTTP Error 400 Bad request status:</p>
+        <ul>
+          <li>If the startDate is missing:
+            <ul>
+              <li>The 'startDate' parameter is missing!</li>
+            </ul>
+          </li>
+          <li>If the both the user and the group parameters are missing:
+            <ul>
+              <li>The 'user' or the 'group' parameter is missing!</li>
+            </ul>
+          </li>
+          <li>If the startDate is defined erroneously:
+            <ul>
+              <li>Cannot parse the 'startDate' parameter: + startDate</li>
+            </ul>
+          </li>
+          <li>If the endDate is defined erroneously:
+            <ul>
+              <li>Cannot parse the 'endDate' parameter: + endDate</li>
+            </ul>
+          </li>
+        </ul>
+        <p>In the case of any other type of error the result is the HTTP Error 500 Internal
+          Server Error status accompanied by the message of the current error.</p>
+        <p>If the user tries to run the query without authenticating to the JIRA server, then
+          the result is the HTTP Error 401 Unauthorized status: Client must be authenticated to
+          access this resource.</p>
+        <p>An empty response is returned if:</p>
+        <ul>
+          <li>There are no users added to the group.</li>
+          <li>The user does not exist in the system.</li>
+          <li>There are no issues added to the project because
+            <ul>
+              <li>none belongs to it,</li>
+              <li>the user has no permission see them.</li>
+            </ul>
+          </li>
+          <li>No viewable worklog entry can be found in the given intervall.</li>
+          <li>etc...</li>
+        </ul>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="examples">
+        <h2>Examples</h2>
+        <p>
+          The URLs of the examples represent the working of the plugin 2.x version. More about the
+          plugin <a
+            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST
+            API version</a>.
+        </p>
+        <h3 id="example1">Example 1</h3>
+        <pre><code>JIRA_URL/rest/jira-worklog-query/1/find/worklogs?startDate=2012-12-12&endDate=2013-01-12&user=testuser</code></pre>
+        <p>It returns each worklog created by the testuser between 2012.12.12 and 2013.01.12
+          according to the permissions of user running the query.</p>
+        <p>A possible response:</p>
+        <pre><code>[[
+  {
+    "id":11000,
+    "duration":14400,
+    "startDate":"2013-01-07T08:00:00Z",
+    "userId":"testuser",
+    "issueKey":"TEST-1"
+  },
+  {
+    "id":11100,
+    "duration":17100,
+    "startDate":"2013-01-08T08:30:00Z",
+    "userId":"testuser",
+    "issueKey":"TEST-1"
+  }
+]]</code></pre>
+        <p>Example response with added "fields=comment" parameter:</p>
+        <pre><code>[[
+  {
+    "id": 103849,
+    "startDate": "2015-01-10T10:15:00+0100",
+    "issueKey": "TEST-7",
+    "userId": "test@everit.biz",
+    "duration": 3900,
+    "comment": "Comment of test worklog"
+  },
+  {
+    "id": 103947,
+    "startDate": "2015-01-10T00:00:00+0100",
+    "issueKey": "TEST-38",
+    "userId": "test@everit.biz",
+    "duration": 17100,
+    "comment": "Some important comment"
+  }
+]]</code></pre>
+        <h3 id="example2">Example 2</h3>
+        <pre><code>JIRA_URL/rest/jira-worklog-query/1/find/worklogs?startDate=2012-12-12&group=test group&project=TEST</code></pre>
+        <p>From 2012.12.12 till today (let the current example date be 2013.01.30), the
+          testgroup members’ worklogs that belong to the project with the TEST key are all returned.
+          In case the authenticated user has no permission to access the project, an empty list is
+          returned.</p>
+        <p>A possible response:</p>
+        <pre><code>[[
+  {
+    "id":11000,
+    "duration":14400,
+    "startDate":"2013-01-07T08:00:00Z",
+    "userId":"testuser",
+    "issueKey":"TEST-1"
+  },
+  {
+    "id":11100,
+    "duration":17100,
+    "startDate":"2013-01-08T08:30:00Z",
+    "userId":"testuser",
+    "issueKey":"TEST-1"
+  },
+  {
+    "id":11110,
+    "duration":17100,
+    "startDate":"2013-01-09T08:30:00Z",
+    "userId":"testUser2",
+    "issueKey":"TEST-2"
+  }
+]]</code></pre>
+        <p>In this example, testUser and testUser2 are members of the test group. The issues
+          with the codes TEST-1 and TEST-2 belong to the TEST project.</p>
+        <h3 id="example3">Example 3</h3>
+        <p>If the authenticated user does not have permission to access the TEST project, the
+          response is an empty list: [[]]</p>
+        <h3 id="example4">Example 4</h3>
+        <pre><code>JIRA_URL/rest/jira-worklog-query/1/find/updatedWorklogs?startDate=2012-12-12&group=test group&project=TEST</code></pre>
+        <p>During the interval between 2012.12.12 and 2013.01.12, all the worklogs modified by
+          the testuser are returned from every project to which the user has access to.</p>
+        <p>A possible response:</p>
+        <pre><code>[[
+  {
+    "id":11000,
+    "duration":14400,
+    "startDate":"2013-01-07T08:00:00Z",
+    "userId":"testuser",
+    "issueKey":"TEST-1"
+  }
+]]</code>
+        </pre>
+        <p>The response is similar to the one in the first example, but the last worklog is
+          missing from the response. One possible explanation for that may be that the testuser
+          modified the worklog description to 2013.01.13. Therefore, the updateWorklogs query does
+          not return it any longer, while a worklog query would return the results of the first
+          example henceforward.</p>
+        <h3 id="example5">Example 5</h3>
+        <pre><code>JIRA_URL/rest/jira-worklog-query/1/find/worklogsByIssues?startDate=2015-01-10&endDate=2015-01-11&user=testuser</code></pre>
+        <p>A possible response:</p>
+        <pre><code>{
+  "startAt": 0,
+  "maxResults": 25,
+  "total": 2,
+  "issues": [
+    {
+      "id": "13405",
+      "self": "http://localhost:8080/rest/api/2/issue/13405",
+      "key": "TEST-1",
+      "timespent": 1440
+    },
+    {
+      "id": "13406",
+      "self": "http://localhost:8080/rest/api/2/issue/13406",
+      "key": "TEST-2",
+      "timespent": 35760
+    }
+  ]
+}</code></pre>
+        <p>Example response with "fields=summary,progress" parameter:</p>
+        <pre><code>{
+  "startAt": 0,
+  "maxResults": 25,
+  "total": 1,
+  "issues": [
+    {
+      "id": "13411",
+      "self": "http://localhost:8080/rest/api/2/issue/13411",
+      "key": "NEW-1",
+      "fields": {
+        "progress": {
+          "progress": 84000,
+          "total": 84000,
+          "percent": 100
+        },
+        "summary": "new issue1"
+      },
+      "timespent": 67080
+    }
+  ]
+}</code></pre>
+      </div>
+      <hr class="featurette-divider">
+
+      <div class="bs-docs-featurette cookbook" id="release_notes">
+        <h2>Release Notes</h2>
+        <h3 id="v_1_2_1">Worklog Query version 1.2.1</h3>
+        <h4>Bugfix:</h4>
+        <ul>
+          <li>sometimes wrong startTime in worklogs result based on timezone</li>
+        </ul>
+        <h3 id="v_1_2_0">Worklog Query version 1.2.0</h3>
+        <h4>Improvements (/find/worklogs):</h4>
+        <ul>
+          <li>new optional parameter called "fields" which defines additional fields to return.
+            Available fields are: comment, updated.</li>
+          <li>querying worklogs now performed by plain sql search</li>
+          <li>minor performance improvements</li>
+        </ul>
+        <h4>New features (/find/worklogsByIssues):</h4>
+        <ul>
+          <li>summarize the worked seconds by issues between the given dates, for the given
+            user(s)</li>
+          <li>the returned issues can be filtered by a jql expression</li>
+          <li>additional fields can be added by the "fields" parameter, just like in the jira
+            api</li>
+        </ul>
+        <h3 id="v_1_1_1">Worklog Query version 1.1.1</h3>
+        <h4>Bugfix</h4>
+        <ul>
+          <li>Fixed an issue where the JSON response contained the userkey instead of the
+            username.</li>
+        </ul>
+        <h3 id="v_1_1_0">Worklog Query version 1.1.0</h3>
+        <h4>New feature</h4>
+        <ul>
+          <li>Querying worklogs modified during an interval.</li>
+        </ul>
+        <h3 id="v_1_0_0">Worklog Query version 1.0.0</h3>
+        <p>Worklog Query released.</p>
+      </div>
     </div>
 
     <!--        Affix-->
@@ -154,7 +707,30 @@
           <li><a href="#install">Install</a></li>
           <li class="active"><a href="#authentication">Authentication</a></li>
           <li><a href="#rest_api_version">REST API verison</a>
-          <li><a href="#queries">Queries</a></li>
+          <li><a href="#queries">Queries</a>
+            <ul class="nav nav-pills nav-stacked">
+              <li><a href="#query_belong">Querying worklogs that belong to an interval</a></li>
+              <li><a href="#query_during">Querying worklogs modified during an interval</a></li>
+              <li><a href="#summarize">Summarize worked time by issues</a></li>
+            </ul></li>
+          <li><a href="#response">Response</a>
+          <li><a href="#error_handling">Error handling</a>
+          <li><a href="#examples">Examples</a>
+            <ul class="nav nav-pills nav-stacked">
+              <li><a href="#example1">Example 1</a></li>
+              <li><a href="#example2">Example 2</a></li>
+              <li><a href="#example3">Example 3</a></li>
+              <li><a href="#example4">Example 4</a></li>
+              <li><a href="#example5">Example 5</a></li>
+            </ul></li>
+          <li><a href="#release_notes">Release Notes</a>
+            <ul class="nav nav-pills nav-stacked">
+              <li><a href="#v_1_2_1">Worklog Query version 1.2.1</a></li>
+              <li><a href="#v_1_2_0">Worklog Query version 1.2.0</a></li>
+              <li><a href="#v_1_1_1">Worklog Query version 1.1.1</a></li>
+              <li><a href="#v_1_1_0">Worklog Query version 1.1.0</a></li>
+              <li><a href="#v_1_0_0">Worklog Query version 1.0.0</a></li>
+            </ul></li>
         </ul>
       </nav>
     </div>
