@@ -134,7 +134,7 @@
         <p>The worklog query can be accessed from the link below:</p>
         <p>
           <b>http://myjira/rest/jira-worklog-query/<a
-            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/worklogs
+            href="#rest_api_version">REST-API-VERSION</a>/find/worklogs
           </b>
         </p>
         <p>The query returns the worklogs that belong to the specified interval. The query
@@ -217,7 +217,7 @@
         <p>The worklog query can be accessed from the link below:</p>
         <p>
           <b>http://myjira/rest/jira-worklog-query/<a
-            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/updatedWorklogs
+            href="#rest_api_version">REST-API-VERSION</a>/find/updatedWorklogs
           </b>
         </p>
         <p>The query returns all the worklogs created and modified during the given interval.
@@ -302,7 +302,7 @@
         <p>The worklog query can be accessed from the link below:</p>
         <p>
           <b>http://myjira/rest/jira-worklog-query/<a
-            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST-API-VERSION</a>/find/worklogsByIssues
+            href="#rest_api_version">REST-API-VERSION</a>/find/worklogsByIssues
           </b>
         </p>
         <p>This function queries worklogs - filtered by the given parameters - and summarize the
@@ -514,9 +514,7 @@
         <h2>Examples</h2>
         <p>
           The URLs of the examples represent the working of the plugin 2.x version. More about the
-          plugin <a
-            href="https://github.com/everit-org/jira-worklog-query-plugin/wiki/REST-API-verison">REST
-            API version</a>.
+          plugin <a href="#rest_api_version">REST API version</a>.
         </p>
         <h3 id="example1">Example 1</h3>
         <pre><code>JIRA_URL/rest/jira-worklog-query/1/find/worklogs?startDate=2012-12-12&endDate=2013-01-12&user=testuser</code></pre>
@@ -661,41 +659,8 @@
       <hr class="featurette-divider">
 
       <div class="bs-docs-featurette cookbook" id="release_notes">
-        <h2>Release Notes</h2>
-        <h3 id="v_1_2_1">Worklog Query version 1.2.1</h3>
-        <h4>Bugfix:</h4>
-        <ul>
-          <li>sometimes wrong startTime in worklogs result based on timezone</li>
-        </ul>
-        <h3 id="v_1_2_0">Worklog Query version 1.2.0</h3>
-        <h4>Improvements (/find/worklogs):</h4>
-        <ul>
-          <li>new optional parameter called "fields" which defines additional fields to return.
-            Available fields are: comment, updated.</li>
-          <li>querying worklogs now performed by plain sql search</li>
-          <li>minor performance improvements</li>
-        </ul>
-        <h4>New features (/find/worklogsByIssues):</h4>
-        <ul>
-          <li>summarize the worked seconds by issues between the given dates, for the given
-            user(s)</li>
-          <li>the returned issues can be filtered by a jql expression</li>
-          <li>additional fields can be added by the "fields" parameter, just like in the jira
-            api</li>
-        </ul>
-        <h3 id="v_1_1_1">Worklog Query version 1.1.1</h3>
-        <h4>Bugfix</h4>
-        <ul>
-          <li>Fixed an issue where the JSON response contained the userkey instead of the
-            username.</li>
-        </ul>
-        <h3 id="v_1_1_0">Worklog Query version 1.1.0</h3>
-        <h4>New feature</h4>
-        <ul>
-          <li>Querying worklogs modified during an interval.</li>
-        </ul>
-        <h3 id="v_1_0_0">Worklog Query version 1.0.0</h3>
-        <p>Worklog Query released.</p>
+        <h2>Releases</h2>
+        <a href="https://github.com/everit-org/jira-worklog-query-plugin/releases">RELEASES</a>
       </div>
     </div>
 
@@ -723,14 +688,7 @@
               <li><a href="#example4">Example 4</a></li>
               <li><a href="#example5">Example 5</a></li>
             </ul></li>
-          <li><a href="#release_notes">Release Notes</a>
-            <ul class="nav nav-pills nav-stacked">
-              <li><a href="#v_1_2_1">Worklog Query version 1.2.1</a></li>
-              <li><a href="#v_1_2_0">Worklog Query version 1.2.0</a></li>
-              <li><a href="#v_1_1_1">Worklog Query version 1.1.1</a></li>
-              <li><a href="#v_1_1_0">Worklog Query version 1.1.0</a></li>
-              <li><a href="#v_1_0_0">Worklog Query version 1.0.0</a></li>
-            </ul></li>
+          <li><a href="#release_notes">Releases</a></li>
         </ul>
       </nav>
     </div>
