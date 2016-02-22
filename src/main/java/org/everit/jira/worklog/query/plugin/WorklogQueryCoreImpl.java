@@ -102,10 +102,9 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     }
   }
 
-  /**
-   * The logger used to log.
-   */
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryCoreImpl.class);
+  private static final int DEFAULT_MAXRESULT_PARAM = 25;
+
+  private static final int DEFAULT_STARTAT_PARAM = 0;
 
   /**
    * The last hour of a day.
@@ -122,9 +121,10 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
    */
   private static final int LAST_SECOND_OF_MINUTE = 59;
 
-  private static final int DEFAULT_MAXRESULT_PARAM = 25;
-
-  private static final int DEFAULT_STARTAT_PARAM = 0;
+  /**
+   * The logger used to log.
+   */
+  private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryCoreImpl.class);
 
   private void addFields(final Issue issue, final IssueBean bean) {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
@@ -499,9 +499,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     Calendar startDateCalendar = convertStartDate(startDate);
     Calendar endDateCalendar = convertEndDate(endDate);
     try {
-      return Response.ok(
-          worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields))
-          .build();
+      return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields);
     } catch (Exception e) {
       LOGGER.error("Failed to query the worklogs", e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
