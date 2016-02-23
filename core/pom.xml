@@ -25,7 +25,7 @@
 
   <parent>
     <groupId>org.everit.jira.worklog.query.plugin</groupId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
     <artifactId>org.everit.jira.worklog.query.plugin.parent</artifactId>
   </parent>
 
