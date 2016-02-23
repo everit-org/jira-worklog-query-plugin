@@ -17,6 +17,7 @@ package org.everit.jira.worklog.query.plugin;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -31,6 +32,7 @@ import com.atlassian.jira.rest.v2.search.SearchResultsBean;
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class SearchResultsBeanWithTimespent extends SearchResultsBean {
 
+  @XmlElement
   private List<IssueBeanWithTimespent> issues;
 
   /**
