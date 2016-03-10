@@ -16,6 +16,7 @@
 package org.everit.jira.worklog.query.plugin;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.xml.bind.annotation.XmlElement;
 
@@ -27,6 +28,12 @@ import com.atlassian.jira.rest.v2.issue.IssueBean;
 public class IssueBeanWithTimespent extends IssueBean {
   @XmlElement
   private Long timespent = 0L;
+
+  IssueBeanWithTimespent(final Long id, final String key, final String selfUri,
+      final Long timespent) throws URISyntaxException {
+    super(id, key, new URI(selfUri));
+    this.timespent = timespent;
+  }
 
   IssueBeanWithTimespent(final Long id, final String key, final URI selfUri,
       final Long timespent) {
