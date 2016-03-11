@@ -364,7 +364,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     Calendar startDateCalendar = convertStartDate(startDate);
     Calendar endDateCalendar = convertEndDate(endDate);
     try {
-      return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields);
+      return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields, true);
     } catch (Exception e) {
       LOGGER.error("Failed to query the worklogs", e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -401,7 +401,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     Calendar startDateCalendar = convertStartDate(startDate);
     Calendar endDateCalendar = convertEndDate(endDate);
     try {
-      return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields);
+      return worklogQuery(startDateCalendar, endDateCalendar, user, group, project, fields, false);
     } catch (Exception e) {
       LOGGER.error("Failed to query the worklogs", e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -546,7 +546,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
    */
   private Response worklogQuery(final Calendar startDate, final Calendar endDate,
       final String userString, final String groupString, final String projectString,
-      final List<StringList> fields) {
+      final List<StringList> fields, final boolean updated) {
 
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
@@ -570,8 +570,10 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     }
 
     List<JsonWorklog> jsonWorklogs =
-        querydslSupport.execute(new FindWorklogsQuery(startDate, endDate, fields, users, projects));
-    JSONArray jsonArrayResult = new JSONArray(jsonWorklogs);
+        querydslSupport.execute(new FindWorklogsQuery(startDate, endDate, fields,
+            users, projects, updated));
+    JSONArray jsonArrayResult = new JSONArray();
+    jsonArrayResult.put(jsonWorklogs);
 
     return Response.ok(jsonArrayResult.toString()).build();
   }

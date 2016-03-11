@@ -29,15 +29,9 @@ public class IssueBeanWithTimespent extends IssueBean {
   @XmlElement
   private Long timespent = 0L;
 
-  IssueBeanWithTimespent(final Long id, final String key, final String selfUri,
+  public IssueBeanWithTimespent(final Long id, final String key, final String selfUri,
       final Long timespent) throws URISyntaxException {
     super(id, key, new URI(selfUri));
-    this.timespent = timespent;
-  }
-
-  IssueBeanWithTimespent(final Long id, final String key, final URI selfUri,
-      final Long timespent) {
-    super(id, key, selfUri);
     this.timespent = timespent;
   }
 

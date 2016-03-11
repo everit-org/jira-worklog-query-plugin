@@ -18,6 +18,7 @@ package org.everit.jira.worklog.query.plugin.query;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -29,7 +30,7 @@ import org.everit.jira.querydsl.schema.QWorklog;
 import org.everit.persistence.querydsl.support.QuerydslCallable;
 
 import com.atlassian.jira.rest.api.util.StringList;
-import com.google.common.collect.ImmutableList;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.sql.Configuration;
 import com.querydsl.sql.SQLQuery;
@@ -47,6 +48,8 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
 
   private final Calendar startDate;
 
+  private final boolean updated;
+
   private final List<String> userKeys;
 
   /**
@@ -62,14 +65,19 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
    *          a list of user keys.
    * @param projectIds
    *          a list of project ids.
+   * @param updated
+   *          True if the method give back the worklogs which were created or updated in the given
+   *          period, else false. The false give back the worklogs of the period.
    */
   public FindWorklogsQuery(final Calendar startDate, final Calendar endDate,
-      final List<StringList> fields, final List<String> userKeys, final List<Long> projectIds) {
+      final List<StringList> fields, final List<String> userKeys, final List<Long> projectIds,
+      final boolean updated) {
     this.startDate = startDate;
     this.endDate = endDate;
     this.fields = fields;
     this.userKeys = userKeys;
     this.projectIds = projectIds;
+    this.updated = updated;
   }
 
   @Override
@@ -86,9 +94,19 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
     Timestamp startTimestamp = new Timestamp(startDate.getTimeInMillis());
     Timestamp endTimestamp = new Timestamp(endDate.getTimeInMillis());
 
-    ImmutableList<String> fieldsAsList = StringList.joinLists(fields).asList();
+    List<String> fieldsAsList =
+        Arrays.asList(StringList.joinLists(fields).toQueryParam().split(","));
     final boolean useComment = fieldsAsList.contains("comment");
     final boolean useUpdated = fieldsAsList.contains("updated");
+
+    BooleanExpression intervalPredicate = null;
+    if (updated) {
+      intervalPredicate = worklog.updated.goe(startTimestamp)
+          .and(worklog.updated.lt(endTimestamp));
+    } else {
+      intervalPredicate = worklog.startdate.goe(startTimestamp)
+          .and(worklog.startdate.lt(endTimestamp));
+    }
 
     return new SQLQuery<JsonWorklog>(connection, configuration)
         .select(JsonWorklog.createProjection(worklog.id,
@@ -103,8 +121,7 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
         .join(project).on(project.id.eq(issue.project))
         .join(appuser).on(appuser.userKey.eq(worklog.author))
         .join(cwduser).on(cwduser.lowerUserName.eq(appuser.lowerUserName))
-        .where(worklog.startdate.goe(startTimestamp)
-            .and(worklog.startdate.lt(endTimestamp))
+        .where(intervalPredicate
             .and(worklog.author.in(userKeys))
             .and(issue.project.in(projectIds)))
         .orderBy(worklog.id.asc())
