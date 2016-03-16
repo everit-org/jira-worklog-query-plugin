@@ -16,6 +16,7 @@
  */
 package org.everit.jira.worklog.query.plugin.core;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -111,6 +112,20 @@ public final class DateTimeConverterUtil {
       throws ParseException {
     DateFormat dateFormat = new SimpleDateFormat(JIRA_OUTPUT_DATE_TIME_FORMAT);
     Date date = dateFormat.parse(dateString);
+    return DateTimeConverterUtil.dateToString(date);
+  }
+
+  /**
+   * Format a timestamp to valid ISO-8601 format String date.
+   *
+   * @param timestamp
+   *          The timestamp.
+   * @return The formated String date.
+   * @throws ParseException
+   *           If cannot parse the String to Date.
+   */
+  public static String stringDateToISO8601FormatString(final Timestamp timestamp) {
+    Date date = new Date(timestamp.getTime());
     return DateTimeConverterUtil.dateToString(date);
   }
 

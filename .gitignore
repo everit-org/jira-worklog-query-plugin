@@ -1,7 +1,10 @@
 # Eclipse and Maven Files #
-.classpath
-.settings
-.project
-.checkstyle
-target
-bin
+/.classpath
+/.settings
+/.project
+/.checkstyle
+/target
+/bin
+/.pmd
+/.fbExcludeFilterFile
+/.pmdruleset.xml

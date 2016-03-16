@@ -16,25 +16,17 @@
  */
 package org.everit.jira.worklog.query.plugin.core;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -43,10 +35,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.everit.jira.querydsl.support.QuerydslSupportImpl;
+import org.everit.jira.worklog.query.plugin.query.FindWorklogsByIssuesQuery;
+import org.everit.jira.worklog.query.plugin.query.FindWorklogsQuery;
+import org.everit.jira.worklog.query.plugin.query.JsonWorklog;
+import org.everit.persistence.querydsl.support.QuerydslSupport;
 import org.ofbiz.core.entity.GenericEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +52,6 @@ import com.atlassian.jira.component.ComponentAccessor;
 import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.exception.DataAccessException;
 import com.atlassian.jira.issue.Issue;
-import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.fields.FieldException;
 import com.atlassian.jira.issue.fields.NavigableField;
@@ -71,20 +64,18 @@ import com.atlassian.jira.issue.fields.rest.RestAwareField;
 import com.atlassian.jira.issue.search.SearchException;
 import com.atlassian.jira.issue.search.SearchResults;
 import com.atlassian.jira.jql.parser.JqlParseException;
-import com.atlassian.jira.ofbiz.DefaultOfBizConnectionFactory;
 import com.atlassian.jira.project.Project;
 import com.atlassian.jira.rest.api.util.StringList;
 import com.atlassian.jira.rest.v2.issue.IncludedFields;
 import com.atlassian.jira.rest.v2.issue.IssueBean;
 import com.atlassian.jira.rest.v2.issue.RESTException;
-import com.atlassian.jira.rest.v2.search.SearchResultsBean;
 import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.Permissions;
-import com.atlassian.jira.usercompatibility.UserCompatibilityHelper;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.jira.util.collect.CollectionBuilder;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
-import com.atlassian.jira.util.json.JSONObject;
 import com.atlassian.jira.web.bean.PagerFilter;
 
 /**
@@ -95,36 +86,6 @@ import com.atlassian.jira.web.bean.PagerFilter;
  */
 @Path("/find")
 public class WorklogQueryResource<V> {
-
-  private class IssueBeanWithTimespent extends IssueBean {
-    @XmlElement
-    private Long timespent = 0L;
-
-    public IssueBeanWithTimespent(final Long id, final String key, final URI selfUri,
-        final Long timespent) {
-      super(id, key, selfUri);
-      this.timespent = timespent;
-    }
-
-    public Long getTimeSpent() {
-      return timespent;
-    }
-  }
-
-  @XmlRootElement
-  @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-  private class SearchResultsBeanWithTimespent extends SearchResultsBean {
-    public List<IssueBeanWithTimespent> issues;
-
-    public SearchResultsBeanWithTimespent(final Integer startAt, final Integer maxResults,
-        final Integer total,
-        final List<IssueBeanWithTimespent> issues) {
-      this.startAt = startAt;
-      this.maxResults = maxResults;
-      this.total = total;
-      this.issues = issues;
-    }
-  }
 
   private static final int DEFAULT_MAXRESULT_PARAM = 25;
 
@@ -149,15 +110,15 @@ public class WorklogQueryResource<V> {
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(WorklogQueryResource.class);
 
+  private QuerydslSupport querydslSupport;
+
   private void addFields(final Issue issue, final IssueBean bean) {
     // iterate over all the visible layout items from the field layout for this issue and attempt to
     // add them
     // to the result
-    final User loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getLoggedInUser();
     final FieldLayout layout = ComponentAccessor.getFieldLayoutManager().getFieldLayout(issue);
     final List<FieldLayoutItem> fieldLayoutItems = layout.getVisibleLayoutItems(
-        loggedInUser, issue.getProjectObject(),
-        CollectionBuilder.list(issue.getIssueTypeObject().getId()));
+        issue.getProjectObject(), CollectionBuilder.list(issue.getIssueTypeObject().getId()));
     for (final FieldLayoutItem fieldLayoutItem : fieldLayoutItems) {
       final OrderableField field = fieldLayoutItem.getOrderableField();
       final FieldJsonRepresentation fieldValue = getFieldValue(fieldLayoutItem, issue);
@@ -172,8 +133,9 @@ public class WorklogQueryResource<V> {
     // All it means is the field is not hidden in at least one project the user has BROWSE
     // permission on.
     try {
+      ApplicationUser loggedInUser = ComponentAccessor.getJiraAuthenticationContext().getUser();
       final Set<NavigableField> fields = ComponentAccessor.getFieldManager()
-          .getAvailableNavigableFields(loggedInUser);
+          .getAvailableNavigableFields(ApplicationUsers.toDirectoryUser(loggedInUser));
       for (NavigableField field : fields) {
         if (!bean.hasField(field.getId())) {
           if (!(field instanceof OrderableField) || (field instanceof ProjectSystemField)) {
@@ -185,6 +147,19 @@ public class WorklogQueryResource<V> {
       }
     } catch (FieldException e) {
       // ignored...display as much as we can.
+    }
+  }
+
+  private void addFieldsToIssueBeans(final List<StringList> fields,
+      final Map<Long, Issue> issueIdIssue, final List<IssueBeanWithTimespent> issueBeans) {
+    IncludedFields includedFields = IncludedFields.includeNavigableByDefault(fields);
+    boolean isEmptyField = StringList.joinLists(fields)
+        .asList().contains("emptyFieldValue");
+    for (IssueBeanWithTimespent issueBean : issueBeans) {
+      issueBean.fieldsToInclude(includedFields);
+      if (!isEmptyField) {
+        addFields(issueIdIssue.get(Long.valueOf(issueBean.getId())), issueBean);
+      }
     }
   }
 
@@ -260,6 +235,14 @@ public class WorklogQueryResource<V> {
     return null;
   }
 
+  private Map<Long, Issue> collectIssueIds(final List<Issue> issues) {
+    Map<Long, Issue> result = new HashMap<Long, Issue>();
+    for (Issue issue : issues) {
+      result.put(issue.getId(), issue);
+    }
+    return result;
+  }
+
   /**
    * Convert the endDate String to Calendar.
    *
@@ -309,10 +292,10 @@ public class WorklogQueryResource<V> {
    * @throws GenericEntityException
    *           If the GenericDelegator throw a GenericEntityException.
    */
-  private List<Long> createProjects(final String projectString, final User user) {
+  private List<Long> createProjects(final String projectString, final ApplicationUser user) {
 
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
-        .getProjectObjects(Permissions.BROWSE, user);
+        .getProjects(Permissions.BROWSE, user);
 
     List<Long> projectList = new ArrayList<Long>();
     for (Project project : projects) {
@@ -342,69 +325,17 @@ public class WorklogQueryResource<V> {
     if ((group != null) && (group.length() != 0)) {
       Set<User> groupUsers = ComponentAccessor.getUserUtil().getAllUsersInGroupNames(
           Arrays.asList(new String[] { group }));
-      Set<String> assigneeIds = new TreeSet<String>();
-      for (User groupUser : groupUsers) {
-        assigneeIds.add(groupUser.getName());
-        String userKey = UserCompatibilityHelper.getKeyForUser(groupUser);
-        users.add(userKey);
+      List<ApplicationUser> appUsers = ApplicationUsers.from(groupUsers);
+      for (ApplicationUser user : appUsers) {
+        users.add(user.getKey());
       }
     } else if ((userName != null) && (userName.length() != 0)) {
-      User user = ComponentAccessor.getUserUtil().getUserObject(userName);
+      ApplicationUser user = ComponentAccessor.getUserManager().getUserByName(userName);
       if (user != null) {
-        String userKey = UserCompatibilityHelper.getKeyForUser(user);
-        users.add(userKey);
+        users.add(user.getKey());
       }
     }
     return users;
-  }
-
-  /**
-   * Convert a ResultSet object to a JSonObject.
-   *
-   * @param rs
-   *          The ResultSet worklog.
-   * @param fields
-   * @return The worklog JSonObject.
-   *
-   * @throws JSONException
-   *           If can't put value to the JSonObject.
-   * @throws ParseException
-   *           If ParserException when parse the startDate.
-   */
-  private JSONObject createWorklogJSONObject(final ResultSet rs, final List<StringList> fields)
-      throws JSONException,
-      SQLException, ParseException {
-    JSONObject jsonWorklog = new JSONObject();
-    jsonWorklog.put("id", rs.getLong("id"));
-
-    Timestamp sDate = rs.getTimestamp("startdate");
-    jsonWorklog.put("startDate",
-        DateTimeConverterUtil.stringDateToISO8601FormatString(sDate.toString()));
-
-    IssueManager issueManager = ComponentAccessor.getIssueManager();
-    String issueKey = issueManager.getIssueObject(rs.getLong("issueid")).getKey();
-    jsonWorklog.put("issueKey", issueKey);
-
-    String userKey = rs.getString("author");
-    User user = UserCompatibilityHelper.getUserForKey(userKey);
-    String userName = user.getName();
-    jsonWorklog.put("userId", userName);
-
-    long timeSpentInSec = rs.getLong("timeworked");
-    jsonWorklog.put("duration", timeSpentInSec);
-
-    if (fields != null) {
-      if (StringList.joinLists(fields).asList().contains("comment")) {
-        String comment = rs.getString("worklogbody");
-        jsonWorklog.put("comment", comment);
-      }
-      if (StringList.joinLists(fields).asList().contains("updated")) {
-        Timestamp updated = rs.getTimestamp("updated");
-        jsonWorklog.put("updated",
-            DateTimeConverterUtil.stringDateToISO8601FormatString(updated.toString()));
-      }
-    }
-    return jsonWorklog;
   }
 
   /**
@@ -578,38 +509,23 @@ public class WorklogQueryResource<V> {
       throw new RESTException(Response.Status.BAD_REQUEST, e.getMessage());
     }
 
-    List<Long> issueIds = new ArrayList<Long>();
-    for (Issue issue : issues) {
-      issueIds.add(issue.getId());
-    }
-    Collections.reverse(issues);
+    Map<Long, Issue> issueIdIssue = collectIssueIds(issues);
 
-    Map<Long, Long> result = sumWorklogs(startDateCalendar, endDateCalendar, users, issueIds);
+    List<IssueBeanWithTimespent> issueBeans = null;
+    try {
+      String jiraBaseUrl = ComponentAccessor.getApplicationProperties()
+          .getString(APKeys.JIRA_BASEURL) + "/rest/api/2/issue/";
+      issueBeans = getQuerydslSupport().execute(new FindWorklogsByIssuesQuery(startDateCalendar,
+          endDateCalendar, users, issueIdIssue.keySet(), startAt, maxResults, jiraBaseUrl));
 
-    IncludedFields includedFields = IncludedFields.includeNavigableByDefault(fields);
-    String baseUrl = ComponentAccessor.getApplicationProperties().getString(APKeys.JIRA_BASEURL)
-        + "/rest/api/2/issue/";
-    boolean isEmptyField = StringList.joinLists(fields).asList().contains("emptyFieldValue");
-    List<IssueBeanWithTimespent> issueBeans = new ArrayList<IssueBeanWithTimespent>();
-    for (int i = 0, j = 0; ((j < issues.size()) && (i < (startAt + maxResults)));) {
-      Issue issue = issues.get(j);
-      if (result.containsKey(issue.getId())) {
-        if ((i >= startAt)) {
-          IssueBeanWithTimespent bean = new IssueBeanWithTimespent(issue.getId(), issue.getKey(),
-              new URI(baseUrl + issue.getId()), result.get(issue.getId()));
-          bean.fieldsToInclude(includedFields);
-          if (!isEmptyField) {
-            addFields(issue, bean);
-          }
-          issueBeans.add(bean);
-        }
-        i++;
-      }
-      j++;
+      addFieldsToIssueBeans(fields, issueIdIssue, issueBeans);
+    } catch (Exception e) {
+      throw new RESTException(Response.Status.BAD_REQUEST,
+          "Error when try collectig issue beans. " + e.getMessage());
     }
-    SearchResultsBeanWithTimespent searchResultsBean = new SearchResultsBeanWithTimespent(startAt,
-        maxResults,
-        result.size(), issueBeans);
+    SearchResultsBeanWithTimespent searchResultsBean =
+        new SearchResultsBeanWithTimespent(startAt, maxResults, issueBeans.size(),
+            issueBeans);
 
     return searchResultsBean;
   }
@@ -641,8 +557,7 @@ public class WorklogQueryResource<V> {
       JqlParseException {
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    User loggedInUser = authenticationContext.getLoggedInUser();
-
+    User loggedInUser = ApplicationUsers.toDirectoryUser(authenticationContext.getUser());
     List<Issue> issues = null;
     SearchService searchService = ComponentAccessor.getComponentOfType(SearchService.class);
     final ParseResult parseResult = searchService.parseQuery(loggedInUser, jql);
@@ -654,6 +569,17 @@ public class WorklogQueryResource<V> {
       throw new JqlParseException(null, parseResult.getErrors().toString());
     }
     return issues;
+  }
+
+  private QuerydslSupport getQuerydslSupport() {
+    if (querydslSupport == null) {
+      try {
+        querydslSupport = new QuerydslSupportImpl();
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot create Worklog Query instance.", e);
+      }
+    }
+    return querydslSupport;
   }
 
   /**
@@ -668,93 +594,6 @@ public class WorklogQueryResource<V> {
       return true;
     }
     return false;
-  }
-
-  /**
-   * Summarize the worked time by issue.
-   *
-   * @param startDateCalendar
-   *          The starting date of the search
-   * @param endDateCalendar
-   *          The ending date of the search
-   * @param users
-   *          The List of users whose worklog's are collected.
-   * @param issueIds
-   *          A List of Issue IDs. Only these issues will be in the returned Map.
-   * @return A Map which keys are issueIDs and values are the worked time on that issue.
-   */
-  private HashMap<Long, Long> sumWorklogs(final Calendar startDateCalendar,
-      final Calendar endDateCalendar,
-      final List<String> users,
-      final List<Long> issueIds) throws SQLException {
-    String schemaName = new DefaultOfBizConnectionFactory().getDatasourceInfo().getSchemaName();
-    String worklogTablename = "";
-    if ((schemaName != null) && !schemaName.equals("")) {
-      worklogTablename = schemaName + ".worklog";
-    } else {
-      worklogTablename = "worklog";
-    }
-    String query = "SELECT worklog.issueid, SUM(worklog.timeworked) AS timeworked"
-        + " FROM " + worklogTablename
-        + " WHERE worklog.startdate>=? AND worklog.startdate<?";
-
-    StringBuilder authorPreparedParams = new StringBuilder();
-    for (int i = 0; i < users.size(); i++) {
-      authorPreparedParams.append("?,");
-    }
-    if (authorPreparedParams.length() > 0) {
-      authorPreparedParams.deleteCharAt(authorPreparedParams.length() - 1);
-    }
-    query += " AND worklog.author IN (" + authorPreparedParams.toString() + ")";
-    query += " GROUP BY worklog.issueid";
-
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    HashMap<Long, Long> result = new HashMap<Long, Long>();
-    try {
-      conn = new DefaultOfBizConnectionFactory().getConnection();
-      ps = conn.prepareStatement(query);
-      int preparedIndex = 1;
-      ps.setTimestamp(preparedIndex++, new Timestamp(startDateCalendar.getTimeInMillis()));
-      ps.setTimestamp(preparedIndex++, new Timestamp(endDateCalendar.getTimeInMillis()));
-      for (String user : users) {
-        ps.setString(preparedIndex++, user);
-      }
-
-      rs = ps.executeQuery();
-
-      while (rs.next()) {
-        Long worklogIssueId = rs.getLong("issueid");
-        if (issueIds.contains(worklogIssueId)) {
-          result.put(worklogIssueId, rs.getLong("timeworked"));
-        }
-      }
-    } finally {
-      if (rs != null) {
-        try {
-          rs.close();
-        } catch (SQLException e) {
-          LOGGER.error("Cannot close ResultSet");
-        }
-      }
-      if (ps != null) {
-        try {
-          ps.close();
-        } catch (SQLException e) {
-          LOGGER.error("Cannot close Statement");
-        }
-      }
-      if (conn != null) {
-        try {
-          conn.close();
-        } catch (SQLException e) {
-          LOGGER.error("Cannot close Connection");
-        }
-      }
-    }
-
-    return result;
   }
 
   /**
@@ -788,11 +627,9 @@ public class WorklogQueryResource<V> {
           throws DataAccessException,
           SQLException, JSONException, ParseException {
 
-    List<JSONObject> worklogs = new ArrayList<JSONObject>();
-
     JiraAuthenticationContext authenticationContext = ComponentAccessor
         .getJiraAuthenticationContext();
-    User loggedInUser = authenticationContext.getLoggedInUser();
+    ApplicationUser loggedInUser = authenticationContext.getUser();
     List<Long> projects = createProjects(projectString, loggedInUser);
     if ((projectString != null) && projects.isEmpty()) {
       return Response
@@ -808,104 +645,13 @@ public class WorklogQueryResource<V> {
           .entity("Error running search: There is no group or user matching the given parameters.")
           .build();
     }
-    String schemaName = new DefaultOfBizConnectionFactory().getDatasourceInfo().getSchemaName();
-    String worklogTablename = "";
-    String issueTablename = "";
-    if ((schemaName != null) && !schemaName.equals("")) {
-      worklogTablename = schemaName + ".worklog";
-      issueTablename = schemaName + ".jiraissue";
-    } else {
-      worklogTablename = "worklog";
-      issueTablename = "jiraissue";
-    }
 
-    if (!projects.isEmpty() && !users.isEmpty()) {
-
-      StringBuilder projectsPreparedParams = new StringBuilder();
-      for (int i = 0; i < projects.size(); i++) {
-        projectsPreparedParams.append("?,");
-      }
-      if (projectsPreparedParams.length() > 0) {
-        projectsPreparedParams.deleteCharAt(projectsPreparedParams.length() - 1);
-      }
-      StringBuilder usersPreparedParams = new StringBuilder();
-      for (int i = 0; i < users.size(); i++) {
-        usersPreparedParams.append("?,");
-      }
-      if (usersPreparedParams.length() > 0) {
-        usersPreparedParams.deleteCharAt(usersPreparedParams.length() - 1);
-      }
-
-      String query =
-          "SELECT worklog.id, worklog.startdate, worklog.issueid, worklog.author, worklog.timeworked, worklog.worklogbody, worklog.updated"
-              + " FROM " + worklogTablename + ", " + issueTablename
-              + " WHERE worklog.issueid=jiraissue.id"
-              + " AND worklog.startdate>=? AND worklog.startdate<?"
-              + " AND worklog.author IN ("
-              + usersPreparedParams.toString() + ")"
-              + " AND jiraissue.project IN ("
-              + projectsPreparedParams.toString() + ")";
-
-      Connection conn = null;
-      PreparedStatement ps = null;
-      ResultSet rs = null;
-      try {
-        conn = new DefaultOfBizConnectionFactory().getConnection();
-        ps = conn.prepareStatement(query);
-        int preparedIndex = 1;
-        ps.setTimestamp(preparedIndex++, new Timestamp(startDate.getTimeInMillis()));
-        ps.setTimestamp(preparedIndex++, new Timestamp(endDate.getTimeInMillis()));
-        for (String user : users) {
-          ps.setString(preparedIndex++, user);
-        }
-        for (Long project : projects) {
-          ps.setLong(preparedIndex++, project);
-        }
-
-        rs = ps.executeQuery();
-        while (rs.next()) {
-          worklogs.add(createWorklogJSONObject(rs, fields));
-        }
-      } finally {
-        if (rs != null) {
-          try {
-            rs.close();
-          } catch (SQLException e) {
-            LOGGER.error("Cannot close ResultSet");
-          }
-        }
-        if (ps != null) {
-          try {
-            ps.close();
-          } catch (SQLException e) {
-            LOGGER.error("Cannot close Statement");
-          }
-        }
-        if (conn != null) {
-          try {
-            conn.close();
-          } catch (SQLException e) {
-            LOGGER.error("Cannot close Connection");
-          }
-        }
-      }
-    }
-
-    Collections.sort(worklogs, new Comparator<JSONObject>() {
-      @Override
-      public int compare(final JSONObject o1, final JSONObject o2) {
-        long a = 0, b = 0;
-        try {
-          a = o1.getLong("id");
-          b = o2.getLong("id");
-        } catch (JSONException e) {
-          throw new RuntimeException(e);
-        }
-        return a > b ? +1 : a < b ? -1 : 0;
-      }
-    });
+    List<JsonWorklog> jsonWorklogs =
+        getQuerydslSupport().execute(new FindWorklogsQuery(startDate, endDate, fields,
+            users, projects, updated));
     JSONArray jsonArrayResult = new JSONArray();
-    jsonArrayResult.put(worklogs);
+    jsonArrayResult.put(jsonWorklogs);
+
     return Response.ok(jsonArrayResult.toString()).build();
 
     // 2.0.0
