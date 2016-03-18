@@ -27,7 +27,7 @@ import org.everit.jira.querydsl.schema.QCwdUser;
 import org.everit.jira.querydsl.schema.QJiraissue;
 import org.everit.jira.querydsl.schema.QProject;
 import org.everit.jira.querydsl.schema.QWorklog;
-import org.everit.persistence.querydsl.support.QuerydslCallable;
+import org.everit.jira.querydsl.support.QuerydslCallable;
 
 import com.atlassian.jira.rest.api.util.StringList;
 import com.querydsl.core.types.dsl.BooleanExpression;
