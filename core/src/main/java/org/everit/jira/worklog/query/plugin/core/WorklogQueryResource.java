@@ -36,11 +36,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.everit.jira.querydsl.support.QuerydslSupportImpl;
+import org.everit.jira.querydsl.support.QuerydslSupport;
+import org.everit.jira.querydsl.support.ri.QuerydslSupportImpl;
 import org.everit.jira.worklog.query.plugin.query.FindWorklogsByIssuesQuery;
 import org.everit.jira.worklog.query.plugin.query.FindWorklogsQuery;
 import org.everit.jira.worklog.query.plugin.query.JsonWorklog;
-import org.everit.persistence.querydsl.support.QuerydslSupport;
 import org.ofbiz.core.entity.GenericEntityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

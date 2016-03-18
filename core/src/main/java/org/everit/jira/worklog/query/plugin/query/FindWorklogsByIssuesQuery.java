@@ -26,8 +26,8 @@ import java.util.Set;
 import org.everit.jira.querydsl.schema.QJiraissue;
 import org.everit.jira.querydsl.schema.QProject;
 import org.everit.jira.querydsl.schema.QWorklog;
+import org.everit.jira.querydsl.support.QuerydslCallable;
 import org.everit.jira.worklog.query.plugin.core.IssueBeanWithTimespent;
-import org.everit.persistence.querydsl.support.QuerydslCallable;
 
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
