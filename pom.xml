@@ -38,9 +38,9 @@
 
   <properties>
     <jira.version>7.0.0</jira.version>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
-    <maven.jira.plugin.version>5.1.9</maven.jira.plugin.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.jira.plugin.version>6.2.4</maven.jira.plugin.version>
   </properties>
 
   <scm>
@@ -174,7 +174,7 @@
     <dependency>
       <groupId>org.everit.jira</groupId>
       <artifactId>jira-querydsl-support</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -261,6 +261,11 @@
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
+    </repository>
+     <repository>
+      <id>everit.release</id>
+      <name>everit-releases</name>
+      <url>https://repo.everit.biz/artifactory/public-release/</url>
     </repository>
   </repositories>
 
