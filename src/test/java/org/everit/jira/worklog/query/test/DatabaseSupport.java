@@ -167,8 +167,8 @@ public final class DatabaseSupport {
   private static void insertCwdUserRows(final Statement createStatement) throws SQLException {
     createStatement.execute(
         "INSERT INTO cwd_user VALUES (10000, 1, 'test-user@everit.biz', "
-            + "'test-user@everit.biz', 1, '2016-03-07 14:06:16.89+01', "
-            + "'2016-03-07 14:06:16.89+01', 'Zsigmond', 'zsigmond', 'Czine', 'czine', "
+            + "'test-user@everit.biz', 1, '2016-03-07 14:06:16.89', "
+            + "'2016-03-07 14:06:16.89', 'Zsigmond', 'zsigmond', 'Czine', 'czine', "
             + "'Zsigmond Czine', 'zsigmond czine', 'test-user@everit.biz', "
             + "'test-user@everit.biz', "
             + "'asdf', NULL, "
@@ -179,27 +179,27 @@ public final class DatabaseSupport {
     createStatement.execute(
         "INSERT INTO jiraissue VALUES (10002, NULL, 3, 10000, 'test-user@everit.biz', NULL, "
             + "'test-user@everit.biz', '10001', 'harom', NULL, NULL, '3', NULL, '10000', "
-            + "'2016-03-07 14:07:41.156+01', '2016-03-07 14:07:41.156+01', NULL, NULL, 0, 1,"
+            + "'2016-03-07 14:07:41.156', '2016-03-07 14:07:41.156', NULL, NULL, 0, 1,"
             + " NULL, NULL, NULL, 10002, NULL, NULL, NULL);");
     createStatement.execute(
         "INSERT INTO jiraissue VALUES (10001, NULL, 2, 10000, 'test-user@everit.biz', NULL, "
             + "'test-user@everit.biz', '10001', 'ketto', NULL, NULL, '3', NULL, '10000', "
-            + "'2016-03-07 14:07:38.683+01', '2016-03-07 14:08:09.022+01', NULL, NULL, 0, 1, "
+            + "'2016-03-07 14:07:38.683', '2016-03-07 14:08:09.022', NULL, NULL, 0, 1, "
             + "NULL, 0, 22020, 10001, NULL, NULL, NULL);");
     createStatement.execute(
         "INSERT INTO jiraissue VALUES (10003, NULL, 4, 10000, 'test-user@everit.biz', NULL, "
             + "'test-user@everit.biz', '10001', 'negy', NULL, NULL, '3', NULL, '10000', "
-            + "'2016-03-07 14:07:43.854+01', '2016-03-07 14:08:24.627+01', NULL, NULL, 0, 1, "
+            + "'2016-03-07 14:07:43.854', '2016-03-07 14:08:24.627', NULL, NULL, 0, 1, "
             + "NULL, 0, 22080, 10003, NULL, NULL, NULL);");
     createStatement.execute(
         "INSERT INTO jiraissue VALUES (10004, NULL, 5, 10000, 'test-user@everit.biz', NULL, "
             + "'test-user@everit.biz', '10001', 'ot', NULL, NULL, '3', NULL, '10000', "
-            + "'2016-03-07 14:07:45.756+01', '2016-03-07 14:08:33.903+01', NULL, NULL, 0, 1, "
+            + "'2016-03-07 14:07:45.756', '2016-03-07 14:08:33.903', NULL, NULL, 0, 1, "
             + "NULL, 0, 22080, 10004, NULL, NULL, NULL);");
     createStatement.execute(
         "INSERT INTO jiraissue VALUES (10000, NULL, 1, 10000, 'test-user@everit.biz', NULL, "
             + "'test-user@everit.biz', '10001', 'egy', NULL, NULL, '3', NULL, '10000', "
-            + "'2016-03-07 14:07:33.368+01', '2016-03-11 10:46:46.357+01', NULL, NULL, 0, 1, "
+            + "'2016-03-07 14:07:33.368', '2016-03-11 10:46:46.357', NULL, NULL, 0, 1, "
             + "NULL, 0, 22020, 10000, NULL, NULL, NULL);");
   }
 
@@ -211,23 +211,22 @@ public final class DatabaseSupport {
   private static void insertWorklogRows(final Statement createStatement) throws SQLException {
     createStatement.execute(
         "INSERT INTO worklog VALUES (10001, 10001, 'test-user@everit.biz', NULL, NULL, '', "
-            + "'2016-03-07 14:08:08.967+01', 'test-user@everit.biz', '2016-03-07 14:08:08.967+01', "
-            + "'2016-03-01 08:00:00+01', 22020);");
+            + "'2016-03-07 14:08:08.967', 'test-user@everit.biz', '2016-03-07 14:08:08.967', "
+            + "'2016-03-01 08:00:00', 22020);");
     createStatement.execute(
         "INSERT INTO worklog VALUES (10002, 10003, 'test-user@everit.biz', NULL, NULL, '', "
-            + "'2016-03-07 14:08:24.536+01', 'test-user@everit.biz', '2016-03-07 14:08:24.536+01', "
-            + "'2016-02-24 08:00:00+01', 22080);");
+            + "'2016-03-07 14:08:24.536', 'test-user@everit.biz', '2016-03-07 14:08:24.536', "
+            + "'2016-02-24 08:00:00', 22080);");
     createStatement.execute(
         "INSERT INTO worklog VALUES (10003, 10004, 'test-user@everit.biz', NULL, NULL, '', "
-            + "'2016-03-07 14:08:33.899+01', 'test-user@everit.biz', '2016-03-07 14:08:33.899+01', "
-            + "'2016-02-23 08:00:00+01', 22080);");
+            + "'2016-03-07 14:08:33.899', 'test-user@everit.biz', '2016-03-07 14:08:33.899', "
+            + "'2016-02-23 08:00:00', 22080);");
     createStatement.execute(
         "INSERT INTO worklog VALUES (10000, 10000, 'test-user@everit.biz', NULL, NULL, 'asdfasf', "
-            + "'2016-03-07 14:07:55.675+01', 'test-user@everit.biz', '2016-03-11 10:46:46.277+01', "
-            + "'2016-03-07 08:00:00+01', 22020);");
+            + "'2016-03-07 14:07:55.675', 'test-user@everit.biz', '2016-03-11 10:46:46.277', "
+            + "'2016-03-07 08:00:00', 22020);");
   }
 
   private DatabaseSupport() {
-    // TODO Auto-generated constructor stub
   }
 }
