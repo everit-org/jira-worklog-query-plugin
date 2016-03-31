@@ -17,7 +17,6 @@
     along with org.everit.jira.worklog.query.plugin.parent.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -105,6 +104,11 @@
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
+    </repository>
+    <repository>
+      <id>everit.release</id>
+      <name>everit-releases</name>
+      <url>https://repo.everit.biz/artifactory/public-release/</url>
     </repository>
   </repositories>
 
