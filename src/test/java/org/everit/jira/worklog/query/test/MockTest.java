@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.Executor;
 
 import javax.sql.XADataSource;
@@ -456,6 +457,9 @@ public class MockTest {
 
     worklogQuery = new WorklogQueryCoreImpl();
     DatabaseSupport.initializeDatabase(managedDataSource);
+
+    System.setProperty("user.timezone", "UTC");
+    TimeZone.setDefault(null);
   }
 
   private BasicManagedDataSource createManagedDataSource(
