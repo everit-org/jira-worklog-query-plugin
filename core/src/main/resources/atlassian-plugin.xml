@@ -23,7 +23,7 @@
   <plugin-info>
     <version>${project.version}</version>
     <description>Jira Worklog Query Plugin</description>
-    <application-version min="5.0" />
+    <application-version min="6.2" />
     <vendor name="EverIT Kft." url="https://www.everit.biz" />
     <param name="atlassian-data-center-compatible">true</param>
   </plugin-info>

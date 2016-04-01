@@ -17,7 +17,6 @@
     along with org.everit.jira.worklog.query.plugin.parent.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -32,14 +31,17 @@
 
   <groupId>org.everit.jira.worklog.query.plugin</groupId>
   <artifactId>org.everit.jira.worklog.query.plugin.parent</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.3-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
   <inceptionYear>2013</inceptionYear>
 
   <properties>
-    <jira.version>5.0</jira.version>
+    <jira.version>6.2</jira.version>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.jira.plugin.version>5.1.9</maven.jira.plugin.version>
   </properties>
 
   <modules>
@@ -63,6 +65,22 @@
     <url>https://github.com/everit-org/jira-worklog-query-plugin/issues</url>
   </issueManagement>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>atlassian-public</id>
+      <url>https://maven.atlassian.com/repository/public</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
   <repositories>
     <repository>
       <id>3dparty</id>
@@ -77,7 +95,7 @@
     <repository>
       <id>atlassian-public</id>
       <url>https://maven.atlassian.com/repository/public</url>
-      <snapshots> 
+      <snapshots>
         <enabled>true</enabled>
         <updatePolicy>never</updatePolicy>
         <checksumPolicy>warn</checksumPolicy>
@@ -86,6 +104,11 @@
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
       </releases>
+    </repository>
+    <repository>
+      <id>everit.release</id>
+      <name>everit-releases</name>
+      <url>https://repo.everit.biz/artifactory/public-release/</url>
     </repository>
   </repositories>
 
