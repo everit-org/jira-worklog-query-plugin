@@ -17,15 +17,21 @@
 
 -->
 
-<atlassian-plugin key="org.everit.jira.worklog.query.plugin.core" name="Jira Worklog Query Plugin"
+<atlassian-plugin key="org.everit.jira.worklog.query.plugin.core" name="RESTful Worklog Query Plugin"
   plugins-version="2">
 
   <plugin-info>
     <version>${project.version}</version>
-    <description>Jira Worklog Query Plugin</description>
+    <description>Query worklogs in JSON format via an authenticated RESTful service. Using the
+      Worklog Query Plugin is easy to retrieve time tracking data from any application.
+    </description>
     <application-version min="6.2" />
     <vendor name="EverIT Kft." url="https://www.everit.biz" />
     <param name="atlassian-data-center-compatible">true</param>
+    <param name="plugin-icon">icons/jwqp16.png</param>
+    <param name="plugin-logo">icons/jwqp144.png</param>
+    <param name="vendor-icon">icons/e_logo16.png</param>
+    <param name="vendor-logo">icons/e_logo72.png</param>
   </plugin-info>
 
   <rest key="JWQP" path="/jira-worklog-query" version="1.2.1">
