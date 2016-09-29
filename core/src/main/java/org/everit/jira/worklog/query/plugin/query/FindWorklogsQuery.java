@@ -109,6 +109,11 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
           .and(worklog.startdate.lt(endTimestamp));
     }
 
+    // using distinct to reduce result. Result is duplicated if has shadows users in system.
+    // https://developer.atlassian.com/jiradev/jira-platform/jira-architecture/database-schema/database-user-and-group-tables
+    // We have solution to fixed it in jira-timetracker-plugin.
+    // Solution found it QueryUtil.selectDisplayNameForUser
+    // (https://github.com/everit-org/jira-timetracker-plugin/blob/v3.1.0/src/main/java/org/everit/jira/reporting/plugin/query/util/QueryUtil.java)
     return new SQLQuery<JsonWorklog>(connection, configuration)
         .select(JsonWorklog.createProjection(worklog.id,
             worklog.startdate,
@@ -126,6 +131,7 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
             .and(worklog.author.in(userKeys))
             .and(issue.project.in(projectIds)))
         .orderBy(worklog.id.asc())
+        .distinct()
         .fetch();
   }
 
