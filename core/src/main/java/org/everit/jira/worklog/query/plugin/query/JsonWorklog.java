@@ -30,6 +30,7 @@ import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.SimpleExpression;
 import com.querydsl.core.types.dsl.StringExpression;
+import com.querydsl.sql.SQLQuery;
 
 /**
  * JsonWorklog is an unordered collection of name/value pairs. Contains information of worklog.
@@ -49,6 +50,48 @@ public class JsonWorklog extends JSONObject {
   private static final String UPDATED = "updated";
 
   private static final String USER_ID = "userId";
+
+  /**
+   * Create a JsonWorklog Bean populating projection for the given type and expressions.
+   *
+   * @param worklogId
+   *          the id of the worklog expression.
+   * @param startDate
+   *          the worklog startdate expression.
+   * @param issueKey
+   *          the issue key expression.
+   * @param userId
+   *          the user id SQL subquery.
+   * @param duration
+   *          the worklog duration expression.
+   * @param comment
+   *          the worklog comment expression.
+   * @param updated
+   *          the worklog updated date expression.
+   * @return the JsonWorklog Bean population projection.
+   */
+  public static QBean<JsonWorklog> createProjection(final NumberExpression<Long> worklogId,
+      final DateTimeExpression<Timestamp> startDate, final StringExpression issueKey,
+      final SQLQuery<String> userId, final NumberExpression<Long> duration,
+      final StringExpression comment, final DateTimeExpression<Timestamp> updated) {
+
+    List<SimpleExpression<?>> expressionList = new ArrayList<SimpleExpression<?>>();
+    expressionList.add(worklogId.as(ID));
+    expressionList.add(startDate.as(START_DATE));
+    expressionList.add(issueKey.as(ISSUE_KEY));
+    expressionList.add(userId.as(USER_ID));
+    expressionList.add(duration.as(DURATION));
+    if (comment != null) {
+      expressionList.add(comment.as(COMMENT));
+    }
+    if (updated != null) {
+      expressionList.add(updated.as(UPDATED));
+    }
+
+    SimpleExpression<?>[] expressions = new SimpleExpression<?>[expressionList.size()];
+
+    return Projections.bean(JsonWorklog.class, expressionList.toArray(expressions));
+  }
 
   /**
    * Create a JsonWorklog Bean populating projection for the given type and expressions.
