@@ -135,7 +135,7 @@ public class JsonWorklog extends JSONObject {
     return Projections.bean(JsonWorklog.class, expressionList.toArray(expressions));
   }
 
-  public void setComment(final String comment) throws JSONException {
+  public void setCommentBody(final String comment) throws JSONException {
     put("comment", comment);
   }
 
