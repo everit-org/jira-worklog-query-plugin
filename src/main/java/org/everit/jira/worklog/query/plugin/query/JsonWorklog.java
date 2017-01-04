@@ -36,7 +36,7 @@ import com.querydsl.sql.SQLQuery;
  */
 public class JsonWorklog extends JSONObject {
 
-  private static final String COMMENT = "comment";
+  private static final String COMMENT = "commentBody";
 
   private static final String DURATION = "duration";
 
@@ -134,8 +134,8 @@ public class JsonWorklog extends JSONObject {
     return Projections.bean(JsonWorklog.class, expressionList.toArray(expressions));
   }
 
-  public void setComment(final String comment) throws JSONException {
-    put(COMMENT, comment);
+  public void setCommentBody(final String comment) throws JSONException {
+    put("comment", comment);
   }
 
   public void setDuration(final long duration) throws JSONException {
