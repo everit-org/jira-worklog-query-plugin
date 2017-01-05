@@ -34,6 +34,7 @@ import com.atlassian.jira.rest.api.util.StringList;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.sql.Configuration;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 
 /**
@@ -109,29 +110,25 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
           .and(worklog.startdate.lt(endTimestamp));
     }
 
-    // using distinct to reduce result. Result is duplicated if has shadows users in system.
-    // https://developer.atlassian.com/jiradev/jira-platform/jira-architecture/database-schema/database-user-and-group-tables
-    // We have solution to fixed it in jira-timetracker-plugin.
-    // Solution found it QueryUtil.selectDisplayNameForUser
-    // (https://github.com/everit-org/jira-timetracker-plugin/blob/v3.1.0/src/main/java/org/everit/jira/reporting/plugin/query/util/QueryUtil.java)
     return new SQLQuery<JsonWorklog>(connection, configuration)
         .select(JsonWorklog.createProjection(worklog.id,
             worklog.startdate,
             issueKey,
-            cwduser.userName,
+            SQLExpressions.select(cwduser.userName)
+                .from(cwduser)
+                .join(appuser).on(cwduser.lowerUserName.eq(appuser.lowerUserName))
+                .where(appuser.userKey.eq(worklog.author))
+                .distinct(),
             worklog.timeworked,
             useComment ? worklog.worklogbody : null,
             useUpdated ? worklog.updated : null))
         .from(worklog)
         .join(issue).on(issue.id.eq(worklog.issueid))
         .join(project).on(project.id.eq(issue.project))
-        .join(appuser).on(appuser.userKey.eq(worklog.author))
-        .join(cwduser).on(cwduser.lowerUserName.eq(appuser.lowerUserName))
         .where(intervalPredicate
             .and(worklog.author.in(userKeys))
             .and(issue.project.in(projectIds)))
         .orderBy(worklog.id.asc())
-        .distinct()
         .fetch();
   }
 
