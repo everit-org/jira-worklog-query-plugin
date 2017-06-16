@@ -41,7 +41,7 @@ public final class DateTimeConverterUtil {
   /**
    * The date format of the output.
    */
-  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
   /**
    * Convert the date to String ({@value #OUTPUT_DATE_TIME_FORMAT}).
@@ -89,6 +89,7 @@ public final class DateTimeConverterUtil {
       final int hourOfDay,
       final int minute, final int second) {
     Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.MILLISECOND, 0);
     calendar.set(
         originalCalendar.get(Calendar.YEAR),
         originalCalendar.get(Calendar.MONTH),
