@@ -41,7 +41,7 @@ public final class DateTimeConverterUtil {
   /**
    * The date format of the output.
    */
-  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+  private static final String OUTPUT_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
   /**
    * Convert the date to String ({@value #OUTPUT_DATE_TIME_FORMAT}).
