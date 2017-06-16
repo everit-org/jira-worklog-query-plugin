@@ -89,6 +89,7 @@ public final class DateTimeConverterUtil {
       final int hourOfDay,
       final int minute, final int second) {
     Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.MILLISECOND, 0);
     calendar.set(
         originalCalendar.get(Calendar.YEAR),
         originalCalendar.get(Calendar.MONTH),
