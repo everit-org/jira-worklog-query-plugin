@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -77,6 +78,7 @@ import com.atlassian.jira.util.collect.CollectionBuilder;
 import com.atlassian.jira.util.json.JSONArray;
 import com.atlassian.jira.util.json.JSONException;
 import com.atlassian.jira.web.bean.PagerFilter;
+
 
 /**
  * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the
@@ -297,17 +299,20 @@ public class WorklogQueryResource<V> {
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
         .getProjects(Permissions.BROWSE, user);
 
-    List<Long> projectList = new ArrayList<Long>();
-    for (Project project : projects) {
-      if ((projectString != null) && (projectString.length() != 0)) {
-        if (projectString.equals(project.getKey())) {
-          projectList.add(project.getId());
+    List<Long> projectIdList = new ArrayList<>();
+    
+    if (projectString != null && (projectString.length() != 0)) {
+      String[] projectStrArray = projectString.split("\\s*,\\s*");
+      Set<String> projectSet = new HashSet<>(Arrays.asList(projectStrArray));
+      
+      for (Project project : projects) {
+        if (projectSet.contains(project.getKey())) {
+          projectIdList.add(project.getId());
         }
-      } else {
-        projectList.add(project.getId());
       }
     }
-    return projectList;
+    
+    return projectIdList;
   }
 
   /**
