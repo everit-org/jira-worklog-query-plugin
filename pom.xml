@@ -143,5 +143,4 @@
       </plugins>
     </pluginManagement>
   </build>
-    <name>jira-worklog-query-plugin-1.x</name>
 </project>

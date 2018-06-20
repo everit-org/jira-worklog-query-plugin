@@ -298,10 +298,9 @@ public class WorklogQueryResource<V> {
 
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
         .getProjects(Permissions.BROWSE, user);
-
-    List<Long> projectIdList = new ArrayList<>();
     
     if (projectString != null && (projectString.length() != 0)) {
+      List<Long> projectIdList = new ArrayList<>();
       String[] projectStrArray = projectString.split("\\s*,\\s*");
       Set<String> projectSet = new HashSet<>(Arrays.asList(projectStrArray));
       
@@ -310,9 +309,11 @@ public class WorklogQueryResource<V> {
           projectIdList.add(project.getId());
         }
       }
+      return projectIdList;
+    } else {
+      return null;
     }
     
-    return projectIdList;
   }
 
   /**
