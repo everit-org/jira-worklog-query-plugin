@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -303,17 +304,22 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
         .getProjects(ProjectPermissions.BROWSE_PROJECTS, user);
 
-    List<Long> projectList = new ArrayList<Long>();
-    for (Project project : projects) {
-      if ((projectString != null) && (projectString.length() != 0)) {
-        if (projectString.equals(project.getKey())) {
-          projectList.add(project.getId());
+    
+    if (projectString != null && (projectString.length() != 0)) {
+      List<Long> projectIdList = new ArrayList<>();
+      String[] projectStrArray = projectString.split("\\s*,\\s*");
+      Set<String> projectSet = new HashSet<>(Arrays.asList(projectStrArray));
+      
+      for (Project project : projects) {
+        if (projectSet.contains(project.getKey())) {
+          projectIdList.add(project.getId());
         }
-      } else {
-        projectList.add(project.getId());
       }
+      return projectIdList;
+    } else {
+      return null;
     }
-    return projectList;
+    
   }
 
   private List<String> createUsers(final String userName, final String group) {
@@ -553,7 +559,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     ApplicationUser loggedInUser = authenticationContext.getLoggedInUser();
 
     List<Long> projects = createProjects(projectString, loggedInUser);
-    if ((projectString != null) && projects.isEmpty()) {
+    if ((projectString != null) && (projects != null) && projects.isEmpty()) {
       return Response
           .status(Response.Status.BAD_REQUEST)
           .entity(
