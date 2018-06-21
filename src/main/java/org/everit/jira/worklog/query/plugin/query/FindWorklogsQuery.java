@@ -100,13 +100,18 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
     final boolean useComment = fieldsAsList.contains("comment");
     final boolean useUpdated = fieldsAsList.contains("updated");
 
-    BooleanExpression intervalPredicate = null;
+    BooleanExpression predicate = null;
     if (updated) {
-      intervalPredicate = worklog.updated.goe(startTimestamp)
+      predicate = worklog.updated.goe(startTimestamp)
           .and(worklog.updated.lt(endTimestamp));
     } else {
-      intervalPredicate = worklog.startdate.goe(startTimestamp)
+      predicate = worklog.startdate.goe(startTimestamp)
           .and(worklog.startdate.lt(endTimestamp));
+    }
+    
+    predicate = predicate.and(worklog.author.in(userKeys));
+    if (projectIds != null) {
+        predicate = predicate.and(issue.project.in(projectIds));
     }
 
     return new SQLQuery<JsonWorklog>(connection, configuration)
@@ -124,9 +129,7 @@ public class FindWorklogsQuery implements QuerydslCallable<List<JsonWorklog>> {
         .from(worklog)
         .join(issue).on(issue.id.eq(worklog.issueid))
         .join(project).on(project.id.eq(issue.project))
-        .where(intervalPredicate
-            .and(worklog.author.in(userKeys))
-            .and(issue.project.in(projectIds)))
+        .where(predicate)
         .orderBy(worklog.id.asc())
         .fetch();
   }
