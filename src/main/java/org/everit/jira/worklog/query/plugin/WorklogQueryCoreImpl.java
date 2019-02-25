@@ -392,7 +392,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
   @Override
   public Response findWorklogs(final String startDate, final String endDate, final String user,
       final String group, final String project, final List<StringList> fields)
-          throws WorklogQueryException {
+      throws WorklogQueryException {
     Response checkRequiredFindWorklogsParamResponse = checkRequiredFindWorklogsParameter(startDate,
         user, group);
     if (checkRequiredFindWorklogsParamResponse != null) {
@@ -420,7 +420,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
   @Override
   public SearchResultsBeanWithTimespent findWorklogsByIssues(
       final FindWorklogsByIssuesParam findWorklogsByIssuesParam)
-          throws WorklogQueryException {
+      throws WorklogQueryException {
     int tmpStartAt = findWorklogsByIssuesParam.startAt;
     int tmpMaxResults = findWorklogsByIssuesParam.maxResults;
     checkRequiredFindWorklogsByIssuesParameter(findWorklogsByIssuesParam.startDate,
@@ -505,7 +505,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     if (parseResult.isValid()) {
       SearchResults results = searchService.search(loggedInUser,
           parseResult.getQuery(), PagerFilter.getUnlimitedFilter());
-      issues = results.getIssues();
+      issues = results.getResults();
     } else {
       throw new JqlParseException(null, parseResult.getErrors().toString());
     }

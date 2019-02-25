@@ -54,10 +54,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.ofbiz.core.entity.config.DatasourceInfo;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -77,10 +78,9 @@ import com.atlassian.jira.security.JiraAuthenticationContext;
 import com.atlassian.jira.security.PermissionManager;
 import com.atlassian.jira.user.ApplicationUser;
 import com.atlassian.jira.user.util.UserManager;
-import com.atlassian.jira.web.bean.PagerFilter;
-import com.atlassian.query.Query;
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore("javax.security.*")
 @PrepareForTest({ DefaultOfBizConnectionFactory.class, DatasourceInfo.class, ParseResult.class })
 public class MockTest {
 
@@ -255,7 +255,7 @@ public class MockTest {
     @Override
     public CallableStatement prepareCall(final String sql, final int resultSetType,
         final int resultSetConcurrency)
-            throws SQLException {
+        throws SQLException {
       return getConnection().prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
@@ -434,17 +434,23 @@ public class MockTest {
     Mockito.when(parseResult.isValid()).thenReturn(Boolean.TRUE);
 
     SearchResults searchResults = Mockito.mock(SearchResults.class);
-    Mockito.when(
-        searchService.search(Matchers.any(ApplicationUser.class), Matchers.any(Query.class),
-            Matchers.any(PagerFilter.class)))
-        .thenReturn(searchResults);
     List<Issue> issues = new ArrayList<>();
     issues.add(new MockIssue(10000));
     issues.add(new MockIssue(10001));
     issues.add(new MockIssue(10002));
     issues.add(new MockIssue(10003));
     issues.add(new MockIssue(10004));
-    Mockito.when(searchResults.getIssues()).thenReturn(issues);
+    Mockito.when(searchResults.getResults()).thenReturn(issues);
+
+    // Mockito.when(
+    // searchService.search(ArgumentMatchers.any(ApplicationUser.class),
+    // ArgumentMatchers.any(Query.class),
+    // ArgumentMatchers.any(PagerFilter.class)))
+    Mockito.when(
+        searchService.search(ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any()))
+        .thenReturn(searchResults);
 
     mockDefaultOfBizConnectionFactory();
 
