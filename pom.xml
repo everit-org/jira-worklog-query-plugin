@@ -30,7 +30,7 @@
 
   <groupId>org.everit.jira</groupId>
   <artifactId>org.everit.jira.worklog.query.plugin</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 

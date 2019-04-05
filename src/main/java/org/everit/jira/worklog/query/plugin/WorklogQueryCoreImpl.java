@@ -231,7 +231,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
   }
 
   private Map<Long, Issue> collectIssueIds(final List<Issue> issues) {
-    Map<Long, Issue> result = new HashMap<Long, Issue>();
+    Map<Long, Issue> result = new HashMap<>();
     for (Issue issue : issues) {
       result.put(issue.getId(), issue);
     }
@@ -303,7 +303,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     Collection<Project> projects = ComponentAccessor.getPermissionManager()
         .getProjects(ProjectPermissions.BROWSE_PROJECTS, user);
 
-    List<Long> projectList = new ArrayList<Long>();
+    List<Long> projectList = new ArrayList<>();
     for (Project project : projects) {
       if ((projectString != null) && (projectString.length() != 0)) {
         if (projectString.equals(project.getKey())) {
@@ -317,7 +317,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
   }
 
   private List<String> createUsers(final String userName, final String group) {
-    List<String> users = new ArrayList<String>();
+    List<String> users = new ArrayList<>();
     if ((group != null) && (group.length() != 0)) {
       Set<ApplicationUser> groupUsers = ComponentAccessor.getUserUtil()
           .getAllUsersInGroupNames(

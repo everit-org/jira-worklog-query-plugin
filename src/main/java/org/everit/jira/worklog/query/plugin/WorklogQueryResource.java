@@ -24,10 +24,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import com.atlassian.jira.rest.api.util.StringList;
-import com.atlassian.jira.rest.v2.issue.RESTException;
 
 /**
  * The WorklogQueryResource class. The class contains the findWorklogs method. The class grant the
@@ -136,7 +134,7 @@ public class WorklogQueryResource {
   @GET
   @Path("/worklogsByIssues")
   @Produces({ MediaType.APPLICATION_JSON })
-  public SearchResultsBeanWithTimespent findWorklogsByIssues(
+  public Response findWorklogsByIssues(
       @QueryParam("startDate") final String startDate,
       @QueryParam("endDate") final String endDate,
       @QueryParam("user") final String user,
@@ -156,9 +154,11 @@ public class WorklogQueryResource {
             .maxResults(maxResults)
             .fields(fields);
     try {
-      return worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParam);
+      return Response.ok(worklogQueryResource.findWorklogsByIssues(findWorklogsByIssuesParam))
+          .build();
     } catch (WorklogQueryException e) {
-      throw new RESTException(Status.BAD_REQUEST, e);
+      return Response.status(Response.Status.BAD_REQUEST)
+          .entity(e.getMessage()).build();
     }
   }
 
