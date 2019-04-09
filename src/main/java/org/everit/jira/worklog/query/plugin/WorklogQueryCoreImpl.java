@@ -255,7 +255,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
       try {
         endDate = DateTimeConverterUtil.inputStringToCalendar(endDateString);
       } catch (ParseException e) {
-        LOGGER.debug("Failed to convert end date", e);
+        LOGGER.error("Failed to convert end date", e);
         throw new WorklogQueryException("Cannot parse the 'endDate' parameter: " + endDateString,
             e);
       }
@@ -279,7 +279,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     try {
       startDate = DateTimeConverterUtil.inputStringToCalendar(startDateString);
     } catch (ParseException e) {
-      LOGGER.debug("Failed to convert start date", e);
+      LOGGER.error("Failed to convert start date", e);
       throw new WorklogQueryException("Cannot parse the 'startDate' parameter: " + startDateString,
           e);
     }
@@ -445,8 +445,10 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
     try {
       issues = getIssuesByJQL(findWorklogsByIssuesParam.jql);
     } catch (SearchException e) {
+      LOGGER.error("Failed to query the worklogs", e);
       throw new WorklogQueryException("Error running search: ", e);
     } catch (JqlParseException e) {
+      LOGGER.error("Failed to parse the JQL", e);
       throw new WorklogQueryException(e.getMessage(), e);
     }
 
@@ -461,6 +463,7 @@ public class WorklogQueryCoreImpl implements WorklogQueryCore {
 
       addFieldsToIssueBeans(findWorklogsByIssuesParam.fields, issueIdIssue, issueBeans);
     } catch (Exception e) {
+      LOGGER.error("Error when try collectig issue beans.", e);
       throw new WorklogQueryException("Error when try collectig issue beans.", e);
     }
     SearchResultsBeanWithTimespent searchResultsBean =
